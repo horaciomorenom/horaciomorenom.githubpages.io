@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method | Horacio Moreno Montañes</title>
+<meta name="keywords" content="Modeling, Numerical Methods, Plasma">
+<meta name="description" content="This paper develops a Lagrangian particle method to simulate plasmas using the Vlasov-Poisson equations.">
+<meta name="author" content="Horacio Moreno Montanes,&amp;thinsp;Robert Krasny">
+<link rel="canonical" href="http://localhost:1313/projects/plasma/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.fe87366398e9e8575b7f9536595feaa61e75def286fffaddfbcedc048822e914.css" integrity="sha256-/oc2Y5jp6Fdbf5U2WV/qph513vKG//rd&#43;87cBIgi6RQ=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/projects/plasma/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript><meta property="og:title" content="Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method" />
+<meta property="og:description" content="This paper develops a Lagrangian particle method to simulate plasmas using the Vlasov-Poisson equations." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://localhost:1313/projects/plasma/" />
+<meta property="og:image" content="http://localhost:1313/close_up.png" /><meta property="article:section" content="projects" />
+<meta property="article:published_time" content="2023-07-15T00:00:00+00:00" />
+<meta property="article:modified_time" content="2023-07-15T00:00:00+00:00" />
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="http://localhost:1313/close_up.png" />
+<meta name="twitter:title" content="Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method"/>
+<meta name="twitter:description" content="This paper develops a Lagrangian particle method to simulate plasmas using the Vlasov-Poisson equations."/>
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Papers",
+      "item": "http://localhost:1313/projects/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method",
+      "item": "http://localhost:1313/projects/plasma/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method",
+  "name": "Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method",
+  "description": "This paper develops a Lagrangian particle method to simulate plasmas using the Vlasov-Poisson equations.",
+  "keywords": [
+    "Modeling", "Numerical Methods", "Plasma"
+  ],
+  "articleBody": " Download Paper Code Abstract The conventional approach to plasma simulations utilizes the particle-in-cell (PIC) method, but PIC simulations often lose resolution as complex features appear in the evolving plasma. This project develops an alternative Lagrangian particle method for a one-dimensional cold electrostatic plasma with periodic boundary conditions, which is both efficient and preserves accuracy as the plasma evolves in time, in contrast to existing methods. The plasma is described by the Vlasov-Poisson equations for the electron distribution in phase space and the self-consistent electric field in physical space. The plasma is represented by discrete charged macro-particles (representing electrons) with a neutralizing constant background distribution of positively charged ions. Two integration techniques, Euler’s method and fourth order Runge-Kutta, are used to evolve the electrons, and regularization is applied to ensure continuity of the electric field. We investigate the effect of the numerical parameters, including the time step $\\Delta t$, number of particles $N$, and the regularization parameter $\\delta$. Initial results indicate that the lack of continuity in the non-regularized problem contributes to error growth for both integration schemes. Additionally, a particle insertion scheme is implemented to preserve the resolution of the plasma. Future extensions of this work seek to apply the method to study other distributions, like the two-stream instability and warm distributions, and further investigate the effects of electric field regularization regarding energy conservation and charge transport.\nFigure 14: Phase space plot of plasma with particle insertion for two periods. Figure 15: Expanded plot of plasma with particle insertion in region between two periods. Animations Animation of plamsa evolution with particle insertion, 200 initial particles for 20 seconds. Related material Presentation slides Poster Presentation ",
+  "wordCount" : "274",
+  "inLanguage": "en",
+  "image":"http://localhost:1313/close_up.png","datePublished": "2023-07-15T00:00:00Z",
+  "dateModified": "2023-07-15T00:00:00Z",
+  "author":[{
+    "@type": "Person",
+    "name": "Horacio Moreno Montanes"
+  }, {
+    "@type": "Person",
+    "name": "Robert Krasny"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "http://localhost:1313/projects/plasma/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Horacio Moreno Montañes",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "http://localhost:1313/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.css" integrity="sha384-RZU/ijkSsFbcmivfdRBQDtwuwVqK7GMOw6IMvKyeWL2K5UAlyp6WonmB8m7Jd0Hn" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/katex.min.js" integrity="sha384-pK1WpvzWVBQiP0/GjnvRxV4mOb0oxFuyRxJlk6vVw146n3egcN5C925NCP7a7BY8" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.13.13/dist/contrib/auto-render.min.js" integrity="sha384-vZTG03m+2yp6N6BNi5iM4rW4oIwk5DfcNdFfxkk9ZWpDriOkXX8voJBFrAO7MpVl" crossorigin="anonymous"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        renderMathInElement(document.body, {
+          
+          
+          delimiters: [
+            {left: '$$', right: '$$', display: true},
+            {left: '$', right: '$', display: false},
+            {left: "\\begin{equation}", right: "\\end{equation}", display: true},
+            {left: "\\begin{equation*}", right: "\\end{equation*}", display: true},
+            {left: "\\begin{align}", right: "\\end{align}", display: true},
+            {left: "\\begin{align*}", right: "\\end{align*}", display: true},
+            {left: "\\begin{alignat}", right: "\\end{alignat}", display: true},
+            {left: "\\begin{gather}", right: "\\end{gather}", display: true},
+            {left: "\\begin{CD}", right: "\\end{CD}", display: true},
+          ],
+          
+          throwOnError : false
+        });
+    });
+</script>
+ 
+
+
+</head>
+
+<body class="" id="top">
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="Horacio">
+             
+                <img src="http://localhost:1313/favicon.ico" alt="" aria-label="logo"
+                    height="18"
+                    width="18">Horacio</a>
+            <div class="logo-switches">
+                <ul class="lang-switch"><li>|</li>
+                </ul>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/cv.pdf" title="CV">
+                    <span>CV</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/projects/" title="Projects">
+                    <span>Projects</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/thoughts/" title="Thoughts">
+                    <span>Thoughts</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/tags/" title="Keywords">
+                    <span>Keywords</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    
+    <h1 class="post-title">
+      Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method
+    </h1>
+    <div class="post-meta">&lt;span title=&#39;2023-07-15 00:00:00 &#43;0000 UTC&#39;&gt;July 2023&lt;/span&gt;&amp;nbsp;&amp;middot;&amp;nbsp;Horacio Moreno Montanes,&amp;amp;thinsp;Robert Krasny
+
+</div>
+  </header> 
+  <div class="post-content"><hr>
+<h5 id="download">Download</h5>
+<ul>
+<li><a href="2023_REU.pdf">Paper</a>
+</li>
+<li><a href="https://github.com/horaciomorenom/PlasmaModel.git" target="_blank">Code</a>
+</li>
+</ul>
+<hr>
+<h5 id="abstract">Abstract</h5>
+<p>The conventional approach to plasma simulations utilizes the particle-in-cell (PIC) method, but PIC simulations often lose resolution as complex features appear in the evolving plasma. This project develops an alternative Lagrangian particle method for a one-dimensional cold electrostatic plasma with periodic boundary conditions, which is both efficient and preserves accuracy as the plasma evolves in time, in contrast to existing methods. The plasma is described by the Vlasov-Poisson equations for the electron distribution in phase space and the self-consistent electric field in physical space. The plasma is represented by discrete charged macro-particles (representing electrons) with a neutralizing constant background distribution of positively charged ions. Two integration techniques, Euler&rsquo;s method and fourth order Runge-Kutta, are used to evolve the electrons, and regularization is applied to ensure continuity of the electric field. We investigate the effect of the numerical parameters, including the time step $\Delta t$, number of particles $N$, and the regularization parameter $\delta$. Initial results indicate that the lack of continuity in the non-regularized problem contributes to error growth for both integration schemes. Additionally, a particle insertion scheme is implemented to preserve the resolution of the plasma. Future extensions of this work seek to apply the method to study other distributions, like the two-stream instability and warm distributions, and further investigate the effects of electric field regularization regarding energy conservation and charge transport.</p>
+<hr>
+<h5 id="figure-14-phase-space-plot-of-plasma-with-particle-insertion-for-two-periods">Figure 14: Phase space plot of plasma with particle insertion for two periods.</h5>
+<p><img loading="lazy" src="evol.png" alt=""  />
+</p>
+<hr>
+<h5 id="figure-15-expanded-plot-of-plasma-with-particle-insertion-in-region-between-two-periods">Figure 15: Expanded plot of plasma with particle insertion in region between two periods.</h5>
+<p><img loading="lazy" src="close_up.png" alt=""  />
+</p>
+<hr>
+<h5 id="animations">Animations</h5>
+<figure style="width: 100%; max-width: 100%; margin: 0 auto;">
+  <div style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden;">
+    <video style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;" controls>
+      <source src="insertion.mp4" type="video/mp4">
+    </video>
+  </div>
+  <figcaption>Animation of plamsa evolution with particle insertion, 200 initial particles for 20 seconds.</figcaption>
+</figure>
+<hr>
+<h5 id="related-material">Related material</h5>
+<ul>
+<li><a href="REU_Presentation.pdf">Presentation slides</a>
+</li>
+<li><a href="SACNAS_poster.pdf">Poster Presentation</a>
+</li>
+</ul>
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="http://localhost:1313/tags/modeling/">Modeling</a></li>
+      <li><a href="http://localhost:1313/tags/numerical-methods/">Numerical Methods</a></li>
+      <li><a href="http://localhost:1313/tags/plasma/">Plasma</a></li>
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+    &copy; 2025 Horacio Moreno Montañes
+    <span>
+    &middot;  Powered by 
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/pmichaillat/hugo-website/" rel="noopener" target="_blank">a modified version</a>
+         of 
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    document.querySelectorAll('pre > code').forEach((codeblock) => {
+        const container = codeblock.parentNode.parentNode;
+
+        const copybutton = document.createElement('button');
+        copybutton.classList.add('copy-code');
+        copybutton.innerHTML = 'copy';
+
+        function copyingDone() {
+            copybutton.innerHTML = 'copied!';
+            setTimeout(() => {
+                copybutton.innerHTML = 'copy';
+            }, 2000);
+        }
+
+        copybutton.addEventListener('click', (cb) => {
+            if ('clipboard' in navigator) {
+                navigator.clipboard.writeText(codeblock.textContent);
+                copyingDone();
+                return;
+            }
+
+            const range = document.createRange();
+            range.selectNodeContents(codeblock);
+            const selection = window.getSelection();
+            selection.removeAllRanges();
+            selection.addRange(range);
+            try {
+                document.execCommand('copy');
+                copyingDone();
+            } catch (e) { };
+            selection.removeRange(range);
+        });
+
+        if (container.classList.contains("highlight")) {
+            container.appendChild(copybutton);
+        } else if (container.parentNode.firstChild == container) {
+            
+        } else if (codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.nodeName == "TABLE") {
+            
+            codeblock.parentNode.parentNode.parentNode.parentNode.parentNode.appendChild(copybutton);
+        } else {
+            
+            codeblock.parentNode.appendChild(copybutton);
+        }
+    });
+</script>
+</body>
+</html>

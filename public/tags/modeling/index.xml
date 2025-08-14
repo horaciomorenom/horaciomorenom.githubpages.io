@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Modeling on Horacio Moreno Montañes</title>
+    <link>http://localhost:1313/tags/modeling/</link>
+    <description>Recent content in Modeling on Horacio Moreno Montañes</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en</language>
+    <lastBuildDate>Sat, 15 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/tags/modeling/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method</title>
+      <link>http://localhost:1313/projects/plasma/</link>
+      <pubDate>Sat, 15 Jul 2023 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/projects/plasma/</guid>
+      <description>This paper develops a Lagrangian particle method to simulate plasmas using the Vlasov-Poisson equations.</description>
+    </item>
+    
+    <item>
+      <title>Modeling of Stadium Waves</title>
+      <link>http://localhost:1313/projects/stadium-wave/</link>
+      <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/projects/stadium-wave/</guid>
+      <description>This paper develops a simple model that recreates the dynamics of stadium waves.</description>
+    </item>
+    
+    <item>
+      <title>Discrete Modeling of Dune-Obstacle Interactions and Dynamics</title>
+      <link>http://localhost:1313/projects/dune-modeling/</link>
+      <pubDate>Sun, 12 Feb 2023 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/projects/dune-modeling/</guid>
+      <description>In this project, we expand upon a discrete desert dune field model by Bishop et. al (2002) and incorporate dune-obstacle interactions.</description>
+    </item>
+    
+  </channel>
+</rss>
