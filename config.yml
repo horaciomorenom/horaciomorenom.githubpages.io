@@ -53,7 +53,7 @@ params:
     profileMode:
           enabled: true
           title: Horacio Moreno Montañes
-          subtitle: "I am Applied and Interdisciplinary Mathematics PhD student at the University of Michigan. I am interested in exploring mathematical patterns embedded in physical phenomena and using them so solve real-world probems. My current interests are the mathematical modeling and both the design and implementation of numerical methods for problems in fluid and plasma dynamics. I am also interested in exploring the application of machine learning and neural networks to physics problems."
+          subtitle: "I am Applied and Interdisciplinary Mathematics PhD student at the University of Michigan. I work in computational modeling of plasma using both kinetic and fluid models, in particular solar plasma physics, as well as studying the dynamics of these systems. I focus on developing methods that are both simple and parallelizeable using both CPUs and GPUs for efficient computation. My current work focuses on developing and implementing numerical methods to model the magnetic field in the solar corona. "
           imageUrl: "picture.jpg"
           imageWidth: 350
           imageHeight: 350
