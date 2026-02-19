@@ -156,23 +156,23 @@
     <div class="controls">
       <div class="ctrl">
         <label>σ (sigma) <span id="v-sigma">10.0</span></label>
-        <input type="range" id="s-sigma" min="1" max="20" step="0.1" value="10">
+        <input type="range" id="s-sigma" min="1" max="20" step="0.1" value="10" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>ρ (rho) <span id="v-rho">18.0</span></label>
-        <input type="range" id="s-rho" min="1.5" max="30" step="0.1" value="18">
+        <input type="range" id="s-rho" min="1.5" max="30" step="0.1" value="17" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>β (beta) <span id="v-beta">2.667</span></label>
-        <input type="range" id="s-beta" min="0.5" max="5" step="0.01" value="2.667">
+        <input type="range" id="s-beta" min="0.5" max="5" step="0.01" value="2.667" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>Steps/frame <span id="v-steps">50</span></label>
-        <input type="range" id="s-steps" min="1" max="200" step="1" value="50">
+        <input type="range" id="s-steps" min="1" max="40" step="1" value="5" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>dt <span id="v-dt">0.005</span></label>
-        <input type="range" id="s-dt" min="0.001" max="0.02" step="0.001" value="0.005">
+        <input type="range" id="s-dt" min="0.001" max="0.02" step="0.001" value="0.005" autocomplete="off">
       </div>
     </div>
   </div>
@@ -182,14 +182,14 @@
     <div class="section-title">Grid Bounds &nbsp;<span style="color:#444;font-size:9px">(y = −x)</span></div>
     <div class="bounds-grid">
       <span class="bounds-row-label">x</span>
-      <input type="number" id="b-xmin" value="-25" step="1">
+      <input type="number" id="b-xmin" value="-50" step="1" autocomplete="off">
       <span class="bounds-sep">→</span>
-      <input type="number" id="b-xmax" value="25"  step="1">
+      <input type="number" id="b-xmax" value="50"  step="1" autocomplete="off">
 
       <span class="bounds-row-label">z</span>
-      <input type="number" id="b-zmin" value="35"  step="1">
+      <input type="number" id="b-zmin" value="10"  step="1" autocomplete="off">
       <span class="bounds-sep">→</span>
-      <input type="number" id="b-zmax" value="85"  step="1">
+      <input type="number" id="b-zmax" value="100"  step="1" autocomplete="off">
     </div>
   </div>
 
