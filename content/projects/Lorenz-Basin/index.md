@@ -17,7 +17,11 @@ cover:
 
 Each pixel represents a point on the surface $y = -x$ with coordinates $(x, z)$. The color indicates which fixed point — $C^+$ or $C^-$ — the trajectory converges to under the Lorenz system:
 
-$$\dot{x} = \sigma(y - x), \quad \dot{y} = \rho x - y - xz, \quad \dot{z} = xy - \beta z$$
+$$\dot{x} = \sigma(y - x),$$
+
+$$\dot{y} = \rho x - y - xz,$$
+
+$$\dot{z} = xy - \beta z$$
 
 Integration is performed entirely on the GPU using WebGL2 fragment shaders. Euler, RK2, and RK4 methods are available. Parameters $\sigma$, $\rho$, and $\beta$ can be adjusted in real time.
 

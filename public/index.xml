@@ -2,63 +2,72 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>Horacio Moreno Montañes</title>
-    <link>http://localhost:1313/</link>
+    <link>https://www.horaciomorenom.me/</link>
     <description>Recent content on Horacio Moreno Montañes</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Thu, 19 Feb 2026 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 19 Feb 2026 00:00:00 +0000</lastBuildDate><atom:link href="https://www.horaciomorenom.me/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Lorenz Basin of Attraction</title>
-      <link>http://localhost:1313/projects/lorenz-basin/</link>
+      <link>https://www.horaciomorenom.me/projects/lorenz-basin/</link>
       <pubDate>Thu, 19 Feb 2026 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/projects/lorenz-basin/</guid>
+      <guid>https://www.horaciomorenom.me/projects/lorenz-basin/</guid>
       <description>An interactive GPU simulation of the Lorenz system&amp;#39;s basin of attraction, rendered in full resolution using WebGL2.</description>
     </item>
     
     <item>
+      <title>Sample Gallery</title>
+      <link>https://www.horaciomorenom.me/art/sample-gallery/</link>
+      <pubDate>Thu, 19 Feb 2026 00:00:00 +0000</pubDate>
+      
+      <guid>https://www.horaciomorenom.me/art/sample-gallery/</guid>
+      <description>A sample gallery to test the art section layout.</description>
+    </item>
+    
+    <item>
       <title>Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method</title>
-      <link>http://localhost:1313/projects/plasma/</link>
+      <link>https://www.horaciomorenom.me/projects/plasma/</link>
       <pubDate>Sat, 15 Jul 2023 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/projects/plasma/</guid>
+      <guid>https://www.horaciomorenom.me/projects/plasma/</guid>
       <description>This paper develops a Lagrangian particle method to simulate plasmas using the Vlasov-Poisson equations.</description>
     </item>
     
     <item>
       <title>Modeling of Stadium Waves</title>
-      <link>http://localhost:1313/projects/stadium-wave/</link>
+      <link>https://www.horaciomorenom.me/projects/stadium-wave/</link>
       <pubDate>Tue, 18 Apr 2023 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/projects/stadium-wave/</guid>
+      <guid>https://www.horaciomorenom.me/projects/stadium-wave/</guid>
       <description>This paper develops a simple model that recreates the dynamics of stadium waves.</description>
     </item>
     
     <item>
       <title>Discrete Modeling of Dune-Obstacle Interactions and Dynamics</title>
-      <link>http://localhost:1313/projects/dune-modeling/</link>
+      <link>https://www.horaciomorenom.me/projects/dune-modeling/</link>
       <pubDate>Sun, 12 Feb 2023 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/projects/dune-modeling/</guid>
+      <guid>https://www.horaciomorenom.me/projects/dune-modeling/</guid>
       <description>In this project, we expand upon a discrete desert dune field model by Bishop et. al (2002) and incorporate dune-obstacle interactions.</description>
     </item>
     
     
     <item>
       <title>Location</title>
-      <link>http://localhost:1313/location/</link>
+      <link>https://www.horaciomorenom.me/location/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/location/</guid>
+      <guid>https://www.horaciomorenom.me/location/</guid>
       <description>Mailing and office addresses at the University of Place.</description>
     </item>
     
     <item>
       <title>Office Hours</title>
-      <link>http://localhost:1313/officehours/</link>
+      <link>https://www.horaciomorenom.me/officehours/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       
-      <guid>http://localhost:1313/officehours/</guid>
+      <guid>https://www.horaciomorenom.me/officehours/</guid>
       <description>Schedule and location for office hours.</description>
     </item>
     

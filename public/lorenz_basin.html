@@ -11,7 +11,7 @@
     background: #0a0a0f;
     color: #ccc;
     font-family: 'Courier New', monospace;
-    font-size: 13px;
+    font-size: 15px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -25,10 +25,11 @@
     flex-shrink: 0;
     image-rendering: pixelated;
     border: 1px solid #222;
+    touch-action: none; /* gestures handled by JS */
     /* size set dynamically by JS */
   }
   .panel {
-    width: 230px;
+    width: 280px;
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
@@ -37,26 +38,26 @@
     overflow-y: auto;
     max-height: 100%;
   }
-  h1 { font-size: 14px; color: #fff; letter-spacing: 0.05em; margin-bottom: 4px; }
-  .subtitle { color: #555; font-size: 11px; line-height: 1.5; }
+  h1 { font-size: 16px; color: #fff; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .subtitle { color: #555; font-size: 13px; line-height: 1.5; }
   .section-title {
-    color: #777; font-size: 10px; text-transform: uppercase;
+    color: #777; font-size: 12px; text-transform: uppercase;
     letter-spacing: 0.1em; margin-bottom: 8px;
     border-bottom: 1px solid #1a1a2e; padding-bottom: 4px;
   }
-  .controls { display: flex; flex-direction: column; gap: 10px; }
-  .ctrl { display: flex; flex-direction: column; gap: 3px; }
-  .ctrl label { display: flex; justify-content: space-between; color: #999; font-size: 12px; }
+  .controls { display: flex; flex-direction: column; gap: 12px; }
+  .ctrl { display: flex; flex-direction: column; gap: 4px; }
+  .ctrl label { display: flex; justify-content: space-between; color: #999; font-size: 14px; }
   .ctrl label span { color: #ddd; }
-  input[type=range] { width: 100%; accent-color: #697aff; cursor: pointer; }
+  input[type=range] { width: 100%; accent-color: #697aff; cursor: pointer; height: 20px; }
 
   /* Number inputs for bounds */
   .bounds-grid {
     display: grid;
     grid-template-columns: auto 1fr auto 1fr;
     align-items: center;
-    gap: 4px 6px;
-    font-size: 11px;
+    gap: 6px 8px;
+    font-size: 13px;
     color: #777;
   }
   .bounds-grid input[type=number] {
@@ -66,8 +67,8 @@
     border-radius: 3px;
     color: #ddd;
     font-family: inherit;
-    font-size: 12px;
-    padding: 4px 6px;
+    font-size: 14px;
+    padding: 5px 7px;
     outline: none;
     transition: border-color 0.15s;
     -moz-appearance: textfield;
@@ -75,20 +76,20 @@
   .bounds-grid input[type=number]::-webkit-inner-spin-button,
   .bounds-grid input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
   .bounds-grid input[type=number]:focus { border-color: #697aff; }
-  .bounds-row-label { color: #666; font-size: 11px; white-space: nowrap; }
-  .bounds-sep { color: #444; text-align: center; font-size: 10px; }
+  .bounds-row-label { color: #666; font-size: 13px; white-space: nowrap; }
+  .bounds-sep { color: #444; text-align: center; font-size: 12px; }
 
   /* Integration method toggle */
   .method-group { display: flex; gap: 0; border: 1px solid #2a2a3e; border-radius: 4px; overflow: hidden; }
   .method-btn {
     flex: 1;
-    padding: 6px 4px;
+    padding: 8px 4px;
     background: #111;
     border: none;
     border-right: 1px solid #2a2a3e;
     color: #666;
     font-family: inherit;
-    font-size: 11px;
+    font-size: 13px;
     cursor: pointer;
     transition: background 0.15s, color 0.15s;
     text-align: center;
@@ -100,9 +101,9 @@
   /* Action buttons */
   .buttons { display: flex; gap: 8px; }
   button.action {
-    flex: 1; padding: 7px 10px;
+    flex: 1; padding: 9px 10px;
     background: #111; border: 1px solid #333;
-    color: #ccc; font-family: inherit; font-size: 12px;
+    color: #ccc; font-family: inherit; font-size: 14px;
     cursor: pointer; border-radius: 3px;
     transition: background 0.15s, border-color 0.15s;
   }
@@ -114,10 +115,10 @@
   canvas.resetting { animation: flash 0.3s ease; }
 
   .stats { display: flex; flex-direction: column; gap: 6px; }
-  .stat { display: flex; justify-content: space-between; color: #555; font-size: 11px; }
+  .stat { display: flex; justify-content: space-between; color: #555; font-size: 13px; }
   .stat span { color: #999; }
   .legend { display: flex; flex-direction: column; gap: 6px; }
-  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #888; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; }
   .swatch {
     width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;
     cursor: pointer; outline: 1px solid transparent; outline-offset: 1px;
@@ -137,11 +138,88 @@
     border-radius: 3px; padding: 5px 7px; line-height: 1.5;
     display: none;
   }
+
+  /* Explore mode */
+  .panel { transition: opacity 0.2s, transform 0.2s; }
+  body.explore .panel { display: none; }
+  body.explore { padding: 0; gap: 0; }
+  body.explore canvas { border: none; }
+
+  #btn-show-panel {
+    position: fixed;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 28px; height: 56px;
+    background: rgba(17, 17, 17, 0.7);
+    border: 1px solid #333;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    z-index: 10;
+  }
+  #btn-show-panel:hover { background: rgba(26, 26, 46, 0.9); color: #697aff; }
+  body.explore #btn-show-panel { display: flex; }
+
+  /* Mobile / tablet responsive */
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+      align-items: stretch;
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 12px;
+      gap: 16px;
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
+      flex-shrink: 0;
+    }
+    body.explore canvas {
+      aspect-ratio: auto;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    body.explore #btn-show-panel {
+      right: auto; left: 50%;
+      top: auto; bottom: 0;
+      transform: translateX(-50%);
+      width: 56px; height: 28px;
+      border: 1px solid #333;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+    }
+    .panel {
+      width: 100%;
+      max-height: none;
+      overflow-y: visible;
+      padding-bottom: 24px;
+    }
+    .method-btn { padding: 10px 4px; }
+    button.action { padding: 11px 10px; }
+    .bounds-grid {
+      grid-template-columns: auto 1fr;
+      gap: 6px;
+    }
+    .bounds-sep { display: none; }
+    .bounds-row-label { grid-column: 1 / -1; margin-top: 4px; }
+    .bounds-grid input[type=number] { padding: 8px 10px; font-size: 15px; }
+    input[type=range] { height: 28px; }
+  }
 </style>
 </head>
 <body>
 
 <canvas id="c" width="800" height="800"></canvas>
+<button id="btn-show-panel" title="Show sidebar">&#9654;</button>
 
 <div class="panel">
   <div>
@@ -150,29 +228,42 @@
   </div>
   <div class="gpu-warn" id="gpu-warn"></div>
 
+  <!-- Controls -->
+  <div>
+    <div class="section-title">Controls</div>
+    <div class="legend">
+      <div class="legend-item"><span style="color:#697aff">Arrow keys</span> Pan view</div>
+      <div class="legend-item"><span style="color:#697aff">Double-click</span> Zoom in</div>
+      <div class="legend-item"><span style="color:#697aff">Shift + double-click</span> Zoom out</div>
+      <div class="legend-item"><span style="color:#697aff">Escape</span> Exit explore mode</div>
+    </div>
+  </div>
+
+  <button class="action" id="btn-explore" style="width:100%">Explore</button>
+
   <!-- Lorenz parameters -->
   <div>
     <div class="section-title">Parameters</div>
     <div class="controls">
       <div class="ctrl">
         <label>σ (sigma) <span id="v-sigma">10.0</span></label>
-        <input type="range" id="s-sigma" min="1" max="20" step="0.1" value="10">
+        <input type="range" id="s-sigma" min="1" max="20" step="0.1" value="10" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>ρ (rho) <span id="v-rho">18.0</span></label>
-        <input type="range" id="s-rho" min="1.5" max="30" step="0.1" value="18">
+        <input type="range" id="s-rho" min="1.5" max="30" step="0.1" value="17" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>β (beta) <span id="v-beta">2.667</span></label>
-        <input type="range" id="s-beta" min="0.5" max="5" step="0.01" value="2.667">
+        <input type="range" id="s-beta" min="0.5" max="5" step="0.01" value="2.667" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>Steps/frame <span id="v-steps">50</span></label>
-        <input type="range" id="s-steps" min="1" max="200" step="1" value="50">
+        <input type="range" id="s-steps" min="1" max="40" step="1" value="5" autocomplete="off">
       </div>
       <div class="ctrl">
         <label>dt <span id="v-dt">0.005</span></label>
-        <input type="range" id="s-dt" min="0.001" max="0.02" step="0.001" value="0.005">
+        <input type="range" id="s-dt" min="0.001" max="0.02" step="0.001" value="0.005" autocomplete="off">
       </div>
     </div>
   </div>
@@ -182,15 +273,16 @@
     <div class="section-title">Grid Bounds &nbsp;<span style="color:#444;font-size:9px">(y = −x)</span></div>
     <div class="bounds-grid">
       <span class="bounds-row-label">x</span>
-      <input type="number" id="b-xmin" value="-25" step="1">
+      <input type="number" id="b-xmin" value="-50" step="1" autocomplete="off">
       <span class="bounds-sep">→</span>
-      <input type="number" id="b-xmax" value="25"  step="1">
+      <input type="number" id="b-xmax" value="50"  step="1" autocomplete="off">
 
       <span class="bounds-row-label">z</span>
-      <input type="number" id="b-zmin" value="35"  step="1">
+      <input type="number" id="b-zmin" value="-10"  step="1" autocomplete="off">
       <span class="bounds-sep">→</span>
-      <input type="number" id="b-zmax" value="85"  step="1">
+      <input type="number" id="b-zmax" value="100"  step="1" autocomplete="off">
     </div>
+    <button class="action" id="btn-reset-view" style="width:100%;margin-top:8px">Reset View</button>
   </div>
 
   <!-- Integration method -->
@@ -502,11 +594,11 @@ const colors = {
 
 // ── Params ────────────────────────────────────────────────────────────────────
 const params = {
-  sigma: 10.0, rho: 18.0, beta: 8/3,
-  stepsPerPass: 50, dt: 0.005,
+  sigma: 10.0, rho: 17.0, beta: 8/3,
+  stepsPerPass: 5, dt: 0.005,
   method: 2,                  // 0=Euler 1=RK2 2=RK4
-  xMin: -25, xMax: 25,
-  zMin:  35, zMax: 85,
+  xMin: -50, xMax: 50,
+  zMin:  -10, zMax: 100,
 };
 
 let ping = 0, totalSteps = 0, totalTime = 0.0, paused = false;
@@ -588,6 +680,25 @@ bindBound('b-xmax', 'xMax');
 bindBound('b-zmin', 'zMin');
 bindBound('b-zmax', 'zMax');
 
+// ── Initialize UI from params ─────────────────────────────────────────────────
+(function initUI() {
+  const sliders = [
+    ['s-sigma', 'v-sigma', 'sigma',        v => v.toFixed(1)],
+    ['s-rho',   'v-rho',   'rho',          v => v.toFixed(1)],
+    ['s-beta',  'v-beta',  'beta',         v => v.toFixed(3)],
+    ['s-dt',    'v-dt',    'dt',           v => v.toFixed(3)],
+    ['s-steps', 'v-steps', 'stepsPerPass', v => v.toFixed(0)],
+  ];
+  for (const [id, valId, key, fmt] of sliders) {
+    document.getElementById(id).value = params[key];
+    document.getElementById(valId).textContent = fmt(params[key]);
+  }
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+})();
+
 // ── UI: integration method toggle ─────────────────────────────────────────────
 const METHOD_NAMES = ['Euler', 'RK2', 'RK4'];
 document.querySelectorAll('.method-btn').forEach(btn => {
@@ -612,6 +723,187 @@ pauseBtn.addEventListener('click', () => {
   pauseBtn.textContent = paused ? 'Resume' : 'Pause';
   pauseBtn.classList.toggle('active', paused);
   if (!paused) requestAnimationFrame(loop);
+});
+
+// ── Double-click zoom ─────────────────────────────────────────────────────────
+canvas.addEventListener('dblclick', e => {
+  const rect = canvas.getBoundingClientRect();
+  const fx = (e.clientX - rect.left)  / rect.width;
+  const fz = 1 - (e.clientY - rect.top) / rect.height;  // WebGL y=0 is bottom
+  const cx = params.xMin + fx * (params.xMax - params.xMin);
+  const cz = params.zMin + fz * (params.zMax - params.zMin);
+  const zoomOut = e.shiftKey;
+  const scale = zoomOut ? 2 : 0.5;  // zoom out: 2x wider; zoom in: 2x narrower
+  const hw = (params.xMax - params.xMin) * scale / 2;
+  const hh = (params.zMax - params.zMin) * scale / 2;
+  const r = v => Math.round(v * 10) / 10;
+  params.xMin = r(cx - hw);  params.xMax = r(cx + hw);
+  params.zMin = r(cz - hh);  params.zMax = r(cz + hh);
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+  clearTimeout(resetTimer);
+  doReset();
+});
+
+// ── Arrow key panning ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+  const dx = (params.xMax - params.xMin) * 0.1;
+  const dz = (params.zMax - params.zMin) * 0.1;
+  let moved = false;
+  if (e.key === 'ArrowLeft')  { params.xMin -= dx; params.xMax -= dx; moved = true; }
+  if (e.key === 'ArrowRight') { params.xMin += dx; params.xMax += dx; moved = true; }
+  if (e.key === 'ArrowDown')  { params.zMin -= dz; params.zMax -= dz; moved = true; }
+  if (e.key === 'ArrowUp')    { params.zMin += dz; params.zMax += dz; moved = true; }
+  if (!moved) return;
+  e.preventDefault();
+  const r = v => Math.round(v * 10) / 10;
+  params.xMin = r(params.xMin); params.xMax = r(params.xMax);
+  params.zMin = r(params.zMin); params.zMax = r(params.zMax);
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+  clearTimeout(resetTimer);
+  doReset();
+});
+
+// ── Touch pan & pinch-zoom ───────────────────────────────────────────────────
+(function() {
+  let touchState = null;
+  let startBounds = null;
+  let startRect = null; // cached at gesture start — CSS transforms can't corrupt it
+
+  function saveBounds() {
+    return { xMin: params.xMin, xMax: params.xMax, zMin: params.zMin, zMax: params.zMax };
+  }
+
+  function tDist(t0, t1) {
+    const dx = t1.clientX - t0.clientX, dy = t1.clientY - t0.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function tMid(t0, t1) {
+    return { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+  }
+
+  function commitGesture() {
+    const r = v => Math.round(v * 10) / 10;
+    params.xMin = r(params.xMin); params.xMax = r(params.xMax);
+    params.zMin = r(params.zMin); params.zMax = r(params.zMax);
+    document.getElementById('b-xmin').value = params.xMin;
+    document.getElementById('b-xmax').value = params.xMax;
+    document.getElementById('b-zmin').value = params.zMin;
+    document.getElementById('b-zmax').value = params.zMax;
+    clearTimeout(resetTimer);
+    doReset();
+    touchState = null;
+    startBounds = null;
+    startRect = null;
+  }
+
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      startRect = canvas.getBoundingClientRect();
+      touchState = { type: 'pan', startX: t.clientX, startY: t.clientY };
+      startBounds = saveBounds();
+    } else if (e.touches.length === 2) {
+      // If transitioning from pan, commit the pan first so bounds are current
+      if (touchState && touchState.type === 'pan') {
+        // bounds already updated by touchmove, just need clean state
+      }
+      startRect = canvas.getBoundingClientRect();
+      startBounds = saveBounds();
+      touchState = {
+        type: 'pinch',
+        startDist: tDist(e.touches[0], e.touches[1]),
+        startMid: tMid(e.touches[0], e.touches[1]),
+      };
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!touchState || !startBounds || !startRect) return;
+
+    if (touchState.type === 'pan' && e.touches.length === 1) {
+      e.preventDefault();
+      const t = e.touches[0];
+      // Fraction of canvas the finger has moved
+      const dx = (t.clientX - touchState.startX) / startRect.width;
+      const dy = (t.clientY - touchState.startY) / startRect.height;
+      const rangeX = startBounds.xMax - startBounds.xMin;
+      const rangeZ = startBounds.zMax - startBounds.zMin;
+      // Drag right → view pans left in param space (subtract x)
+      // Drag down → view pans down in param space (WebGL y=0 is bottom, so add z)
+      params.xMin = startBounds.xMin - dx * rangeX;
+      params.xMax = startBounds.xMax - dx * rangeX;
+      params.zMin = startBounds.zMin + dy * rangeZ;
+      params.zMax = startBounds.zMax + dy * rangeZ;
+
+    } else if (touchState.type === 'pinch' && e.touches.length === 2) {
+      e.preventDefault();
+      const curDist = tDist(e.touches[0], e.touches[1]);
+      const curMid = tMid(e.touches[0], e.touches[1]);
+      const scale = touchState.startDist / curDist; // >1 zoom out, <1 zoom in
+
+      const rangeX = startBounds.xMax - startBounds.xMin;
+      const rangeZ = startBounds.zMax - startBounds.zMin;
+
+      // Parameter-space point under the initial pinch midpoint
+      const fx0 = (touchState.startMid.x - startRect.left) / startRect.width;
+      const fz0 = 1 - (touchState.startMid.y - startRect.top) / startRect.height;
+      const anchorX = startBounds.xMin + fx0 * rangeX;
+      const anchorZ = startBounds.zMin + fz0 * rangeZ;
+
+      // Where the current midpoint sits on canvas (fractional)
+      const fx1 = (curMid.x - startRect.left) / startRect.width;
+      const fz1 = 1 - (curMid.y - startRect.top) / startRect.height;
+
+      // New ranges
+      const newRX = rangeX * scale;
+      const newRZ = rangeZ * scale;
+
+      // Anchor point should appear at current midpoint's fractional position
+      params.xMin = anchorX - fx1 * newRX;
+      params.xMax = params.xMin + newRX;
+      params.zMin = anchorZ - fz1 * newRZ;
+      params.zMax = params.zMin + newRZ;
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchend', e => {
+    if (!touchState) return;
+    if (e.touches.length === 0) {
+      commitGesture();
+    } else if (e.touches.length === 1 && touchState.type === 'pinch') {
+      // Went from pinch back to one finger — commit pinch, start fresh pan
+      commitGesture();
+    }
+  });
+  canvas.addEventListener('touchcancel', () => {
+    if (!touchState) return;
+    // Revert to startBounds on cancel
+    if (startBounds) Object.assign(params, startBounds);
+    touchState = null;
+    startBounds = null;
+    startRect = null;
+  });
+})();
+
+// ── Reset view button ─────────────────────────────────────────────────────────
+const DEFAULT_BOUNDS = { xMin: -50, xMax: 50, zMin: -10, zMax: 100 };
+document.getElementById('btn-reset-view').addEventListener('click', () => {
+  Object.assign(params, DEFAULT_BOUNDS);
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+  clearTimeout(resetTimer);
+  doReset();
 });
 
 // ── Color picker ──────────────────────────────────────────────────────────────
@@ -691,14 +983,85 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
+// ── Explore mode ─────────────────────────────────────────────────────────────
+let exploreMode = false;
+
+const showPanelBtn = document.getElementById('btn-show-panel');
+
+let boundsBeforeExplore = null;
+
+function setExploreMode(on) {
+  exploreMode = on;
+  document.body.classList.toggle('explore', on);
+  // Point arrow toward the panel: up on mobile (panel below), right on desktop (panel right)
+  showPanelBtn.innerHTML = (on && window.innerWidth <= MOBILE_BP) ? '&#9650;' : '&#9654;';
+  if (on) {
+    // Save current bounds so we can restore on exit
+    boundsBeforeExplore = { xMin: params.xMin, xMax: params.xMax, zMin: params.zMin, zMax: params.zMax };
+    // Extend z-range to match screen aspect ratio
+    const aspect = window.innerHeight / window.innerWidth;
+    const rangeX = params.xMax - params.xMin;
+    const targetZ = rangeX * aspect;
+    const cz = (params.zMin + params.zMax) / 2;
+    params.zMin = Math.round((cz - targetZ / 2) * 10) / 10;
+    params.zMax = Math.round((cz + targetZ / 2) * 10) / 10;
+    document.getElementById('b-zmin').value = params.zMin;
+    document.getElementById('b-zmax').value = params.zMax;
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    // Restore bounds from before explore
+    if (boundsBeforeExplore) {
+      Object.assign(params, boundsBeforeExplore);
+      document.getElementById('b-xmin').value = params.xMin;
+      document.getElementById('b-xmax').value = params.xMax;
+      document.getElementById('b-zmin').value = params.zMin;
+      document.getElementById('b-zmax').value = params.zMax;
+      boundsBeforeExplore = null;
+    }
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+  resize();
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && exploreMode) {
+    exploreMode = false;
+    document.body.classList.remove('explore');
+    resize();
+  }
+});
+
+document.getElementById('btn-explore').addEventListener('click', () => setExploreMode(true));
+document.getElementById('btn-show-panel').addEventListener('click', () => setExploreMode(false));
+
 // ── Responsive canvas size ────────────────────────────────────────────────────
+const MOBILE_BP = 768;
+
 function resize() {
-  const PANEL_W = 230 + 24 + 48; // panel + gap + body padding both sides
-  const PAD_H   = 48;             // body padding top + bottom
-  const avW = Math.max(100, window.innerWidth  - PANEL_W);
-  const avH = Math.max(100, window.innerHeight - PAD_H);
-  canvas.style.width  = avW + 'px';
-  canvas.style.height = avH + 'px';
+  const isMobile = window.innerWidth <= MOBILE_BP;
+  let avW, avH;
+
+  if (exploreMode) {
+    avW = window.innerWidth;
+    avH = window.innerHeight;
+  } else if (isMobile) {
+    // Stacked layout: canvas takes full width, square aspect ratio
+    avW = Math.max(100, window.innerWidth - 24); // body padding
+    avH = avW; // square
+  } else {
+    // Side-by-side layout
+    const PANEL_W = 280 + 24 + 48;
+    const PAD_H   = 48;
+    avW = Math.max(100, window.innerWidth  - PANEL_W);
+    avH = Math.max(100, window.innerHeight - PAD_H);
+  }
+
+  if (!isMobile || exploreMode) {
+    canvas.style.width  = avW + 'px';
+    canvas.style.height = avH + 'px';
+  }
 
   // Use full device pixel resolution, capped to GPU max texture size.
   // On software renderers, also cap CSS size so the texture stays manageable.

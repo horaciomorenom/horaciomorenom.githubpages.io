@@ -772,25 +772,24 @@ document.addEventListener('keydown', e => {
 
 // ── Touch pan & pinch-zoom ───────────────────────────────────────────────────
 (function() {
-  let touchState = null; // { type: 'pan'|'pinch', ... }
-
-  // Save bounds at gesture start so deltas are relative to original view
+  let touchState = null;
   let startBounds = null;
+  let startRect = null; // cached at gesture start — CSS transforms can't corrupt it
 
   function saveBounds() {
     return { xMin: params.xMin, xMax: params.xMax, zMin: params.zMin, zMax: params.zMax };
   }
 
-  function touchDist(t0, t1) {
+  function tDist(t0, t1) {
     const dx = t1.clientX - t0.clientX, dy = t1.clientY - t0.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  function touchMid(t0, t1) {
+  function tMid(t0, t1) {
     return { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
   }
 
-  function updateBoundsUI() {
+  function commitGesture() {
     const r = v => Math.round(v * 10) / 10;
     params.xMin = r(params.xMin); params.xMax = r(params.xMax);
     params.zMin = r(params.zMin); params.zMax = r(params.zMax);
@@ -798,96 +797,101 @@ document.addEventListener('keydown', e => {
     document.getElementById('b-xmax').value = params.xMax;
     document.getElementById('b-zmin').value = params.zMin;
     document.getElementById('b-zmax').value = params.zMax;
+    clearTimeout(resetTimer);
+    doReset();
+    touchState = null;
+    startBounds = null;
+    startRect = null;
   }
 
   canvas.addEventListener('touchstart', e => {
     if (e.touches.length === 1) {
       const t = e.touches[0];
+      startRect = canvas.getBoundingClientRect();
       touchState = { type: 'pan', startX: t.clientX, startY: t.clientY };
       startBounds = saveBounds();
-      canvas.style.transform = '';
     } else if (e.touches.length === 2) {
-      // Reset any in-progress pan transform before starting pinch
-      canvas.style.transform = '';
-      canvas.style.transformOrigin = '';
-      const d = touchDist(e.touches[0], e.touches[1]);
-      const mid = touchMid(e.touches[0], e.touches[1]);
-      touchState = { type: 'pinch', startDist: d, midX: mid.x, midY: mid.y };
-      startBounds = saveBounds(); // re-save current (possibly panned) bounds
+      // If transitioning from pan, commit the pan first so bounds are current
+      if (touchState && touchState.type === 'pan') {
+        // bounds already updated by touchmove, just need clean state
+      }
+      startRect = canvas.getBoundingClientRect();
+      startBounds = saveBounds();
+      touchState = {
+        type: 'pinch',
+        startDist: tDist(e.touches[0], e.touches[1]),
+        startMid: tMid(e.touches[0], e.touches[1]),
+      };
       e.preventDefault();
     }
   }, { passive: false });
 
   canvas.addEventListener('touchmove', e => {
-    if (!touchState || !startBounds) return;
-    const rect = canvas.getBoundingClientRect();
+    if (!touchState || !startBounds || !startRect) return;
 
     if (touchState.type === 'pan' && e.touches.length === 1) {
       e.preventDefault();
       const t = e.touches[0];
-      const dx = (t.clientX - touchState.startX) / rect.width;
-      const dy = (t.clientY - touchState.startY) / rect.height;
+      // Fraction of canvas the finger has moved
+      const dx = (t.clientX - touchState.startX) / startRect.width;
+      const dy = (t.clientY - touchState.startY) / startRect.height;
       const rangeX = startBounds.xMax - startBounds.xMin;
       const rangeZ = startBounds.zMax - startBounds.zMin;
-      // Drag right → view moves left (subtract), drag down → view moves up (add, since y is flipped)
+      // Drag right → view pans left in param space (subtract x)
+      // Drag down → view pans down in param space (WebGL y=0 is bottom, so add z)
       params.xMin = startBounds.xMin - dx * rangeX;
       params.xMax = startBounds.xMax - dx * rangeX;
       params.zMin = startBounds.zMin + dy * rangeZ;
       params.zMax = startBounds.zMax + dy * rangeZ;
-      // Apply CSS transform for visual feedback (reset on touchend)
-      canvas.style.transform = `translate(${t.clientX - touchState.startX}px, ${t.clientY - touchState.startY}px)`;
+
     } else if (touchState.type === 'pinch' && e.touches.length === 2) {
       e.preventDefault();
-      const d = touchDist(e.touches[0], e.touches[1]);
-      const curMid = touchMid(e.touches[0], e.touches[1]);
-      const scale = touchState.startDist / d; // >1 = zoom out, <1 = zoom in
+      const curDist = tDist(e.touches[0], e.touches[1]);
+      const curMid = tMid(e.touches[0], e.touches[1]);
+      const scale = touchState.startDist / curDist; // >1 zoom out, <1 zoom in
 
-      // The point under the initial midpoint in parameter space
-      const startFx = (touchState.midX - rect.left) / rect.width;
-      const startFz = 1 - (touchState.midY - rect.top) / rect.height;
       const rangeX = startBounds.xMax - startBounds.xMin;
       const rangeZ = startBounds.zMax - startBounds.zMin;
-      const anchorX = startBounds.xMin + startFx * rangeX;
-      const anchorZ = startBounds.zMin + startFz * rangeZ;
 
-      // New ranges after scaling
-      const newRangeX = rangeX * scale;
-      const newRangeZ = rangeZ * scale;
+      // Parameter-space point under the initial pinch midpoint
+      const fx0 = (touchState.startMid.x - startRect.left) / startRect.width;
+      const fz0 = 1 - (touchState.startMid.y - startRect.top) / startRect.height;
+      const anchorX = startBounds.xMin + fx0 * rangeX;
+      const anchorZ = startBounds.zMin + fz0 * rangeZ;
 
-      // Where the current midpoint is on screen (fractional)
-      const curFx = (curMid.x - rect.left) / rect.width;
-      const curFz = 1 - (curMid.y - rect.top) / rect.height;
+      // Where the current midpoint sits on canvas (fractional)
+      const fx1 = (curMid.x - startRect.left) / startRect.width;
+      const fz1 = 1 - (curMid.y - startRect.top) / startRect.height;
 
-      // Place anchor point at current midpoint position
-      params.xMin = anchorX - curFx * newRangeX;
-      params.xMax = params.xMin + newRangeX;
-      params.zMin = anchorZ - curFz * newRangeZ;
-      params.zMax = params.zMin + newRangeZ;
+      // New ranges
+      const newRX = rangeX * scale;
+      const newRZ = rangeZ * scale;
 
-      // Visual feedback: combined translate + scale
-      const cssScale = d / touchState.startDist;
-      const ox = touchState.midX - rect.left, oy = touchState.midY - rect.top;
-      const tx = curMid.x - touchState.midX, ty = curMid.y - touchState.midY;
-      canvas.style.transformOrigin = `${ox}px ${oy}px`;
-      canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${cssScale})`;
+      // Anchor point should appear at current midpoint's fractional position
+      params.xMin = anchorX - fx1 * newRX;
+      params.xMax = params.xMin + newRX;
+      params.zMin = anchorZ - fz1 * newRZ;
+      params.zMax = params.zMin + newRZ;
     }
   }, { passive: false });
 
-  function endGesture() {
-    if (!touchState || !startBounds) { touchState = null; return; }
-    canvas.style.transform = '';
-    canvas.style.transformOrigin = '';
-    updateBoundsUI();
-    clearTimeout(resetTimer);
-    doReset();
+  canvas.addEventListener('touchend', e => {
+    if (!touchState) return;
+    if (e.touches.length === 0) {
+      commitGesture();
+    } else if (e.touches.length === 1 && touchState.type === 'pinch') {
+      // Went from pinch back to one finger — commit pinch, start fresh pan
+      commitGesture();
+    }
+  });
+  canvas.addEventListener('touchcancel', () => {
+    if (!touchState) return;
+    // Revert to startBounds on cancel
+    if (startBounds) Object.assign(params, startBounds);
     touchState = null;
     startBounds = null;
-  }
-
-  canvas.addEventListener('touchend', e => {
-    if (e.touches.length === 0) endGesture();
+    startRect = null;
   });
-  canvas.addEventListener('touchcancel', endGesture);
 })();
 
 // ── Reset view button ─────────────────────────────────────────────────────────
