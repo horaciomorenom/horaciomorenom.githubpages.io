@@ -164,6 +164,41 @@
   }
   #btn-show-panel:hover { background: rgba(26, 26, 46, 0.9); color: #697aff; }
   body.explore #btn-show-panel { display: flex; }
+
+  /* Mobile / tablet responsive */
+  @media (max-width: 768px) {
+    body {
+      flex-direction: column;
+      align-items: stretch;
+      height: auto;
+      min-height: 100vh;
+      overflow-y: auto;
+      padding: 12px;
+      gap: 16px;
+    }
+    canvas {
+      width: 100% !important;
+      height: auto !important;
+      aspect-ratio: 1;
+      flex-shrink: 0;
+    }
+    .panel {
+      width: 100%;
+      max-height: none;
+      overflow-y: visible;
+      padding-bottom: 24px;
+    }
+    .method-btn { padding: 10px 4px; }
+    button.action { padding: 11px 10px; }
+    .bounds-grid {
+      grid-template-columns: auto 1fr;
+      gap: 6px;
+    }
+    .bounds-sep { display: none; }
+    .bounds-row-label { grid-column: 1 / -1; margin-top: 4px; }
+    .bounds-grid input[type=number] { padding: 8px 10px; font-size: 15px; }
+    input[type=range] { height: 28px; }
+  }
 </style>
 </head>
 <body>
@@ -834,13 +869,31 @@ document.getElementById('btn-explore').addEventListener('click', () => setExplor
 document.getElementById('btn-show-panel').addEventListener('click', () => setExploreMode(false));
 
 // ── Responsive canvas size ────────────────────────────────────────────────────
+const MOBILE_BP = 768;
+
 function resize() {
-  const PANEL_W = exploreMode ? 0 : 280 + 24 + 48; // panel + gap + body padding both sides
-  const PAD_H   = exploreMode ? 0 : 48;              // body padding top + bottom
-  const avW = Math.max(100, window.innerWidth  - PANEL_W);
-  const avH = Math.max(100, window.innerHeight - PAD_H);
-  canvas.style.width  = avW + 'px';
-  canvas.style.height = avH + 'px';
+  const isMobile = window.innerWidth <= MOBILE_BP;
+  let avW, avH;
+
+  if (exploreMode) {
+    avW = window.innerWidth;
+    avH = window.innerHeight;
+  } else if (isMobile) {
+    // Stacked layout: canvas takes full width, square aspect ratio
+    avW = Math.max(100, window.innerWidth - 24); // body padding
+    avH = avW; // square
+  } else {
+    // Side-by-side layout
+    const PANEL_W = 280 + 24 + 48;
+    const PAD_H   = 48;
+    avW = Math.max(100, window.innerWidth  - PANEL_W);
+    avH = Math.max(100, window.innerHeight - PAD_H);
+  }
+
+  if (!isMobile || exploreMode) {
+    canvas.style.width  = avW + 'px';
+    canvas.style.height = avH + 'px';
+  }
 
   // Use full device pixel resolution, capped to GPU max texture size.
   // On software renderers, also cap CSS size so the texture stays manageable.
