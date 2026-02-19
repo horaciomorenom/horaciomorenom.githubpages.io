@@ -92,6 +92,8 @@
 }
 
 .entry-cover img {
+    display: block;
+    margin: 0 auto;
     border-radius: var(--radius);
     pointer-events: none;
     width: 90%;

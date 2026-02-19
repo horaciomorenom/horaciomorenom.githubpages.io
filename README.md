@@ -4,11 +4,11 @@ This repository contains a [Hugo](https://github.com/gohugoio/hugo) template to 
 
 ## Documentation
 
-The template is documented at https://pascalmichaillat.org/d5/.
+The template is documented at <https://pascalmichaillat.org/d5/>.
 
 ## Illustration
 
-The website produced by the template can be viewed at https://pascalmichaillat.org/hugo-website/.
+The website produced by the template can be viewed at <https://pascalmichaillat.org/hugo-website/>.
 
 ## Features
 
@@ -33,13 +33,13 @@ The website produced by the template can be viewed at https://pascalmichaillat.o
 
 + The first time that you push your repository to GitHub, you need to allow GitHub Actions and GitHub Pages so the website can be built and deployed to GitHub Pages.
 + The first step is to [ask GitHub to publish the website with a GitHub Action](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site#publishing-with-a-custom-github-actions-workflow).  GitHub offers a ready-made action to publish a Hugo website, called `Deploy Hugo site to Pages`. This action must be enabled in the [Pages Settings](https://github.com/pmichaillat/hugo-website/settings/pages) of your GitHub repository. You can view the workflow triggered by the action in the `.github/workflows/hugo.yml` file.
-+ Once the GitHub Actions are enabled, GitHub will build and publish the website as soon as the repository is updated. 
++ Once the GitHub Actions are enabled, GitHub will build and publish the website as soon as the repository is updated.
 
 ## Usage
 
 ### Development
 
-Navigate to the website directory and run `hugo server` in the terminal. The command builds the website on your machine and makes it available at http://localhost:1313. You can modify the content of the repository and develop your website entirely on your local machine.
+Navigate to the website directory and run `hugo server` in the terminal. The command builds the website on your machine and makes it available at <http://localhost:1313>. You can modify the content of the repository and develop your website entirely on your local machine.
 
 ### Compilation
 

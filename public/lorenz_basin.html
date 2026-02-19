@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lorenz Basin of Attraction</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: #0a0a0f;
+    color: #ccc;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    padding: 24px;
+    height: 100vh;
+    overflow: hidden;
+  }
+  canvas {
+    display: block;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+    border: 1px solid #222;
+    /* size set dynamically by JS */
+  }
+  .panel {
+    width: 230px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-top: 4px;
+    overflow-y: auto;
+    max-height: 100%;
+  }
+  h1 { font-size: 14px; color: #fff; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .subtitle { color: #555; font-size: 11px; line-height: 1.5; }
+  .section-title {
+    color: #777; font-size: 10px; text-transform: uppercase;
+    letter-spacing: 0.1em; margin-bottom: 8px;
+    border-bottom: 1px solid #1a1a2e; padding-bottom: 4px;
+  }
+  .controls { display: flex; flex-direction: column; gap: 10px; }
+  .ctrl { display: flex; flex-direction: column; gap: 3px; }
+  .ctrl label { display: flex; justify-content: space-between; color: #999; font-size: 12px; }
+  .ctrl label span { color: #ddd; }
+  input[type=range] { width: 100%; accent-color: #697aff; cursor: pointer; }
+
+  /* Number inputs for bounds */
+  .bounds-grid {
+    display: grid;
+    grid-template-columns: auto 1fr auto 1fr;
+    align-items: center;
+    gap: 4px 6px;
+    font-size: 11px;
+    color: #777;
+  }
+  .bounds-grid input[type=number] {
+    width: 100%;
+    background: #111;
+    border: 1px solid #2a2a3e;
+    border-radius: 3px;
+    color: #ddd;
+    font-family: inherit;
+    font-size: 12px;
+    padding: 4px 6px;
+    outline: none;
+    transition: border-color 0.15s;
+    -moz-appearance: textfield;
+  }
+  .bounds-grid input[type=number]::-webkit-inner-spin-button,
+  .bounds-grid input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; }
+  .bounds-grid input[type=number]:focus { border-color: #697aff; }
+  .bounds-row-label { color: #666; font-size: 11px; white-space: nowrap; }
+  .bounds-sep { color: #444; text-align: center; font-size: 10px; }
+
+  /* Integration method toggle */
+  .method-group { display: flex; gap: 0; border: 1px solid #2a2a3e; border-radius: 4px; overflow: hidden; }
+  .method-btn {
+    flex: 1;
+    padding: 6px 4px;
+    background: #111;
+    border: none;
+    border-right: 1px solid #2a2a3e;
+    color: #666;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+    text-align: center;
+  }
+  .method-btn:last-child { border-right: none; }
+  .method-btn:hover { background: #1a1a2e; color: #aaa; }
+  .method-btn.active { background: #1a1a2e; color: #697aff; }
+
+  /* Action buttons */
+  .buttons { display: flex; gap: 8px; }
+  button.action {
+    flex: 1; padding: 7px 10px;
+    background: #111; border: 1px solid #333;
+    color: #ccc; font-family: inherit; font-size: 12px;
+    cursor: pointer; border-radius: 3px;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  button.action:hover { background: #1a1a2e; border-color: #697aff; color: #fff; }
+  button.action.active { background: #1a1a2e; border-color: #697aff; color: #697aff; }
+
+  /* Reset flash */
+  @keyframes flash { 0%,100% { border-color: #333; } 50% { border-color: #697aff; } }
+  canvas.resetting { animation: flash 0.3s ease; }
+
+  .stats { display: flex; flex-direction: column; gap: 6px; }
+  .stat { display: flex; justify-content: space-between; color: #555; font-size: 11px; }
+  .stat span { color: #999; }
+  .legend { display: flex; flex-direction: column; gap: 6px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #888; }
+  .swatch {
+    width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;
+    cursor: pointer; outline: 1px solid transparent; outline-offset: 1px;
+    transition: outline-color 0.15s;
+  }
+  .swatch:hover { outline-color: #697aff; }
+  .error {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: #0a0a0f;
+    display: none; align-items: center; justify-content: center;
+    color: #ff6b6b; font-family: monospace; font-size: 14px;
+    padding: 40px; text-align: center;
+  }
+  .gpu-warn {
+    font-size: 10px; color: #c8922a;
+    background: #1e1600; border: 1px solid #3a2a00;
+    border-radius: 3px; padding: 5px 7px; line-height: 1.5;
+    display: none;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="c" width="800" height="800"></canvas>
+
+<div class="panel">
+  <div>
+    <h1>Lorenz Basin</h1>
+    <p class="subtitle">Basin of attraction for C+ / C− fixed points on the surface y = −x</p>
+  </div>
+  <div class="gpu-warn" id="gpu-warn"></div>
+
+  <!-- Lorenz parameters -->
+  <div>
+    <div class="section-title">Parameters</div>
+    <div class="controls">
+      <div class="ctrl">
+        <label>σ (sigma) <span id="v-sigma">10.0</span></label>
+        <input type="range" id="s-sigma" min="1" max="20" step="0.1" value="10">
+      </div>
+      <div class="ctrl">
+        <label>ρ (rho) <span id="v-rho">18.0</span></label>
+        <input type="range" id="s-rho" min="1.5" max="30" step="0.1" value="18">
+      </div>
+      <div class="ctrl">
+        <label>β (beta) <span id="v-beta">2.667</span></label>
+        <input type="range" id="s-beta" min="0.5" max="5" step="0.01" value="2.667">
+      </div>
+      <div class="ctrl">
+        <label>Steps/frame <span id="v-steps">50</span></label>
+        <input type="range" id="s-steps" min="1" max="200" step="1" value="50">
+      </div>
+      <div class="ctrl">
+        <label>dt <span id="v-dt">0.005</span></label>
+        <input type="range" id="s-dt" min="0.001" max="0.02" step="0.001" value="0.005">
+      </div>
+    </div>
+  </div>
+
+  <!-- Grid bounds -->
+  <div>
+    <div class="section-title">Grid Bounds &nbsp;<span style="color:#444;font-size:9px">(y = −x)</span></div>
+    <div class="bounds-grid">
+      <span class="bounds-row-label">x</span>
+      <input type="number" id="b-xmin" value="-25" step="1">
+      <span class="bounds-sep">→</span>
+      <input type="number" id="b-xmax" value="25"  step="1">
+
+      <span class="bounds-row-label">z</span>
+      <input type="number" id="b-zmin" value="35"  step="1">
+      <span class="bounds-sep">→</span>
+      <input type="number" id="b-zmax" value="85"  step="1">
+    </div>
+  </div>
+
+  <!-- Integration method -->
+  <div>
+    <div class="section-title">Integration Method</div>
+    <div class="method-group">
+      <button class="method-btn" data-method="0">Euler</button>
+      <button class="method-btn" data-method="1">RK2</button>
+      <button class="method-btn active" data-method="2">RK4</button>
+    </div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="buttons">
+    <button class="action" id="btn-reset">Reset</button>
+    <button class="action" id="btn-pause">Pause</button>
+  </div>
+
+  <!-- Status -->
+  <div>
+    <div class="section-title">Status</div>
+    <div class="stats">
+      <div class="stat">Method <span id="st-method">RK4</span></div>
+      <div class="stat">Integr. time <span id="st-time">0.000</span></div>
+      <div class="stat">Steps <span id="st-steps">0</span></div>
+      <div class="stat">FPS <span id="st-fps">—</span></div>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div>
+    <div class="section-title">Legend</div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="swatch" data-color-key="colorP" style="background:#697aff" title="Click to change color"></div>
+        C+ = (+√β(ρ−1), +√β(ρ−1), ρ−1)
+      </div>
+      <div class="legend-item">
+        <div class="swatch" data-color-key="colorM" style="background:#ffa369" title="Click to change color"></div>
+        C− = (−√β(ρ−1), −√β(ρ−1), ρ−1)
+      </div>
+      <div class="legend-item">
+        <div class="swatch" data-color-key="colorBg" style="background:#cccccc" title="Click to change color"></div>
+        Unclassified / boundary
+      </div>
+    </div>
+  </div>
+
+  <!-- Save -->
+  <div style="margin-top:auto; padding-top:4px;">
+    <button class="action" id="btn-save" style="width:100%">Save PNG</button>
+  </div>
+</div>
+
+<div class="error" id="error-msg"></div>
+<input type="color" id="color-picker" style="position:fixed;opacity:0;pointer-events:none;width:0;height:0">
+
+<script>
+"use strict";
+
+// ── WebGL2 setup ──────────────────────────────────────────────────────────────
+const canvas = document.getElementById('c');
+const gl = canvas.getContext('webgl2', { antialias: false });
+
+function fatal(msg) {
+  const el = document.getElementById('error-msg');
+  el.textContent = msg;
+  el.style.display = 'flex';
+  canvas.style.display = 'none';
+}
+
+if (!gl) { fatal('WebGL2 not available. Please use Chrome, Firefox, or Safari 15+.'); throw 0; }
+if (!gl.getExtension('EXT_color_buffer_float'))
+  { fatal('EXT_color_buffer_float not available. Your GPU/driver may not support float render targets.'); throw 0; }
+
+// ── Shader sources ────────────────────────────────────────────────────────────
+const VS = `#version 300 es
+in vec2 aPos;
+out vec2 vUV;
+void main() {
+  vUV = aPos * 0.5 + 0.5;
+  gl_Position = vec4(aPos, 0.0, 1.0);
+}`;
+
+// Simulation: Euler / Midpoint (RK2) / RK4 selected by uMethod uniform
+const SIM_FS = `#version 300 es
+precision highp float;
+
+uniform sampler2D uState;
+uniform float uSigma, uBeta, uRho, uDt;
+uniform int   uStepsPerPass;
+uniform int   uMethod;   // 0 = Euler, 1 = RK2/Midpoint, 2 = RK4
+
+in vec2 vUV;
+out vec4 outState;
+
+vec3 lorenz(vec3 s) {
+  return vec3(
+    uSigma * (s.y - s.x),
+    s.x * (uRho - s.z) - s.y,
+    s.x * s.y - uBeta * s.z
+  );
+}
+
+vec3 euler(vec3 s, float dt) {
+  return s + dt * lorenz(s);
+}
+
+vec3 rk2(vec3 s, float dt) {
+  vec3 k1 = lorenz(s);
+  return s + dt * lorenz(s + 0.5 * dt * k1);
+}
+
+vec3 rk4(vec3 s, float dt) {
+  vec3 k1 = lorenz(s);
+  vec3 k2 = lorenz(s + 0.5 * dt * k1);
+  vec3 k3 = lorenz(s + 0.5 * dt * k2);
+  vec3 k4 = lorenz(s + dt * k3);
+  return s + (dt / 6.0) * (k1 + 2.0*k2 + 2.0*k3 + k4);
+}
+
+void main() {
+  vec4 state = texture(uState, vUV);
+  vec3 s = state.xyz;
+
+  for (int i = 0; i < 256; i++) {
+    if (i >= uStepsPerPass) break;
+    if (uMethod == 0)      s = euler(s, uDt);
+    else if (uMethod == 1) s = rk2(s, uDt);
+    else                   s = rk4(s, uDt);
+  }
+
+  outState = vec4(s, state.w + float(uStepsPerPass));
+}`;
+
+// Display: color by nearest fixed point with convergence fade
+const DISP_FS = `#version 300 es
+precision highp float;
+
+uniform sampler2D uState;
+uniform float uBeta, uRho;
+uniform vec3 uColorP, uColorM, uColorBg;
+
+in vec2 vUV;
+out vec4 outColor;
+
+void main() {
+  vec4 state = texture(uState, vUV);
+  vec3 s = state.xyz;
+
+  float r  = sqrt(max(0.0, uBeta * (uRho - 1.0)));
+  vec3 cp  = vec3( r,  r, uRho - 1.0);
+  vec3 cm  = vec3(-r, -r, uRho - 1.0);
+
+  float dp = length(s - cp);
+  float dm = length(s - cm);
+  float total = dp + dm;
+  float strength = (total > 0.001) ? abs(dp - dm) / total : 0.0;
+  float alpha = smoothstep(0.05, 0.4, strength);
+
+  vec3 col = (uRho <= 1.0) ? uColorBg : mix(uColorBg, (dp < dm) ? uColorP : uColorM, alpha);
+  outColor = vec4(col, 1.0);
+}`;
+
+// ── Compile / link ────────────────────────────────────────────────────────────
+function compile(type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src); gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
+}
+function link(vs, fs) {
+  const p = gl.createProgram();
+  gl.attachShader(p, vs); gl.attachShader(p, fs); gl.linkProgram(p);
+  if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+  return p;
+}
+
+let simProg, dispProg;
+try {
+  const vsShader = compile(gl.VERTEX_SHADER, VS);
+  simProg  = link(vsShader, compile(gl.FRAGMENT_SHADER, SIM_FS));
+  dispProg = link(vsShader, compile(gl.FRAGMENT_SHADER, DISP_FS));
+} catch(e) { fatal('Shader error: ' + e.message); throw e; }
+
+const simU = {
+  state:        gl.getUniformLocation(simProg, 'uState'),
+  sigma:        gl.getUniformLocation(simProg, 'uSigma'),
+  beta:         gl.getUniformLocation(simProg, 'uBeta'),
+  rho:          gl.getUniformLocation(simProg, 'uRho'),
+  dt:           gl.getUniformLocation(simProg, 'uDt'),
+  stepsPerPass: gl.getUniformLocation(simProg, 'uStepsPerPass'),
+  method:       gl.getUniformLocation(simProg, 'uMethod'),
+};
+const dispU = {
+  state:   gl.getUniformLocation(dispProg, 'uState'),
+  beta:    gl.getUniformLocation(dispProg, 'uBeta'),
+  rho:     gl.getUniformLocation(dispProg, 'uRho'),
+  colorP:  gl.getUniformLocation(dispProg, 'uColorP'),
+  colorM:  gl.getUniformLocation(dispProg, 'uColorM'),
+  colorBg: gl.getUniformLocation(dispProg, 'uColorBg'),
+};
+
+// ── Fullscreen quad ───────────────────────────────────────────────────────────
+const vao = gl.createVertexArray();
+gl.bindVertexArray(vao);
+const vbuf = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, vbuf);
+gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+gl.enableVertexAttribArray(0);
+gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+gl.bindVertexArray(null);
+
+// Force attrib location 0 for both programs (they share the same VS so it's the same)
+const aLoc = 0;
+
+// ── GPU / software-renderer detection ────────────────────────────────────────
+// Strategy 1: renderer string via WEBGL_debug_renderer_info (Chrome/Edge).
+// Strategy 2: timing benchmark fallback (Firefox removed the extension).
+const SOFTWARE_RE      = /swiftshader|llvmpipe|mesa offscreen|microsoft basic render|software rasterizer/i;
+const SOFTWARE_RES_CAP = 512; // max CSS px per axis when no hardware GPU
+
+function rendererIsSoftware() {
+  const ext = gl.getExtension('WEBGL_debug_renderer_info');
+  const r = ext
+    ? (gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) || '')
+    : (gl.getParameter(gl.RENDERER) || ''); // some browsers still expose this
+  return SOFTWARE_RE.test(r);
+}
+
+function benchmarkIsSlow() {
+  // Run 20 RK4 sim passes over a 256×256 float texture and time the GPU flush.
+  // Hardware: < ~10 ms. Software (CPU fallback): typically > 100 ms.
+  const sz = 256;
+  const btex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, btex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, sz, sz, 0, gl.RGBA, gl.FLOAT, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  const bfbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, bfbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, btex, 0);
+  gl.viewport(0, 0, sz, sz);
+  gl.useProgram(simProg);
+  gl.bindVertexArray(vao);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, btex);
+  gl.uniform1i(simU.state, 0);
+  gl.uniform1f(simU.sigma, 10); gl.uniform1f(simU.beta, 8/3);
+  gl.uniform1f(simU.rho, 18);  gl.uniform1f(simU.dt, 0.005);
+  gl.uniform1i(simU.stepsPerPass, 50); gl.uniform1i(simU.method, 2);
+  const t0 = performance.now();
+  for (let i = 0; i < 20; i++) gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.finish(); // synchronous flush — blocks until GPU is done
+  const elapsed = performance.now() - t0;
+  gl.bindVertexArray(null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.deleteFramebuffer(bfbo); gl.deleteTexture(btex);
+  return elapsed > 80;
+}
+
+const isSoftwareGPU = rendererIsSoftware() || benchmarkIsSlow();
+
+if (isSoftwareGPU) {
+  const warn = document.getElementById('gpu-warn');
+  warn.textContent = '⚠ No hardware GPU detected. Resolution capped to ' + SOFTWARE_RES_CAP + ' px to avoid slowdown.';
+  warn.style.display = 'block';
+}
+
+// ── Textures / FBOs ───────────────────────────────────────────────────────────
+let W = 0, H = 0;   // set by resize() before first doReset()
+let textures = [null, null], fbos = [null, null];
+
+function createFloatTexture(data) {
+  const tex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, tex);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, W, H, 0, gl.RGBA, gl.FLOAT, data || null);
+  return tex;
+}
+
+function createFBO(tex) {
+  const fbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+  if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE)
+    fatal('Framebuffer incomplete');
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  return fbo;
+}
+
+// ── Color state ───────────────────────────────────────────────────────────────
+function hexToVec3(hex) {
+  return [
+    parseInt(hex.slice(1,3), 16) / 255,
+    parseInt(hex.slice(3,5), 16) / 255,
+    parseInt(hex.slice(5,7), 16) / 255,
+  ];
+}
+
+const colors = {
+  colorP:  '#697aff',
+  colorM:  '#ffa369',
+  colorBg: '#cccccc',
+};
+
+// ── Params ────────────────────────────────────────────────────────────────────
+const params = {
+  sigma: 10.0, rho: 18.0, beta: 8/3,
+  stepsPerPass: 50, dt: 0.005,
+  method: 2,                  // 0=Euler 1=RK2 2=RK4
+  xMin: -25, xMax: 25,
+  zMin:  35, zMax: 85,
+};
+
+let ping = 0, totalSteps = 0, totalTime = 0.0, paused = false;
+
+// ── State init ────────────────────────────────────────────────────────────────
+function makeInitialState() {
+  const { xMin, xMax, zMin, zMax } = params;
+  const data = new Float32Array(W * H * 4);
+  for (let j = 0; j < H; j++) {
+    for (let i = 0; i < W; i++) {
+      const idx = (j * W + i) * 4;
+      const x = xMin + (i / (W - 1)) * (xMax - xMin);
+      const z = zMin + (j / (H - 1)) * (zMax - zMin);
+      data[idx]   = x;
+      data[idx+1] = -x;   // y = -x
+      data[idx+2] = z;
+      data[idx+3] = 0.0;
+    }
+  }
+  return data;
+}
+
+function doReset() {
+  for (let k = 0; k < 2; k++) {
+    if (textures[k]) gl.deleteTexture(textures[k]);
+    if (fbos[k])     gl.deleteFramebuffer(fbos[k]);
+  }
+  textures[0] = createFloatTexture(makeInitialState());
+  textures[1] = createFloatTexture(null);
+  fbos[0] = createFBO(textures[0]);
+  fbos[1] = createFBO(textures[1]);
+  ping = 0; totalSteps = 0; totalTime = 0.0;
+  document.getElementById('st-time').textContent  = '0.000';
+  document.getElementById('st-steps').textContent = '0';
+  // Flash canvas border briefly
+  canvas.classList.add('resetting');
+  setTimeout(() => canvas.classList.remove('resetting'), 300);
+}
+
+// (doReset called by resize() on first load)
+
+// ── Debounced auto-reset ──────────────────────────────────────────────────────
+let resetTimer = null;
+function scheduleReset() {
+  clearTimeout(resetTimer);
+  resetTimer = setTimeout(doReset, 300);
+}
+
+// ── UI: sliders ───────────────────────────────────────────────────────────────
+function bindSlider(id, valId, key, fmt, triggerReset = true) {
+  const el = document.getElementById(id);
+  const vl = document.getElementById(valId);
+  el.addEventListener('input', () => {
+    params[key] = parseFloat(el.value);
+    vl.textContent = fmt ? fmt(params[key]) : params[key];
+    if (triggerReset) scheduleReset();
+  });
+}
+
+bindSlider('s-sigma', 'v-sigma', 'sigma',        v => v.toFixed(1));
+bindSlider('s-rho',   'v-rho',   'rho',          v => v.toFixed(1));
+bindSlider('s-beta',  'v-beta',  'beta',         v => v.toFixed(3));
+bindSlider('s-dt',    'v-dt',    'dt',           v => v.toFixed(3));
+// steps/frame: no reset needed (doesn't change the trajectory)
+bindSlider('s-steps', 'v-steps', 'stepsPerPass', v => v.toFixed(0), false);
+
+// ── UI: bounds inputs ─────────────────────────────────────────────────────────
+function bindBound(id, key) {
+  const el = document.getElementById(id);
+  el.addEventListener('input', () => {
+    const v = parseFloat(el.value);
+    if (!isFinite(v)) return;
+    params[key] = v;
+    scheduleReset();
+  });
+}
+bindBound('b-xmin', 'xMin');
+bindBound('b-xmax', 'xMax');
+bindBound('b-zmin', 'zMin');
+bindBound('b-zmax', 'zMax');
+
+// ── UI: integration method toggle ─────────────────────────────────────────────
+const METHOD_NAMES = ['Euler', 'RK2', 'RK4'];
+document.querySelectorAll('.method-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    params.method = parseInt(btn.dataset.method, 10);
+    document.querySelectorAll('.method-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('st-method').textContent = METHOD_NAMES[params.method];
+    scheduleReset();
+  });
+});
+
+// ── UI: action buttons ────────────────────────────────────────────────────────
+document.getElementById('btn-reset').addEventListener('click', () => {
+  clearTimeout(resetTimer);
+  doReset();
+});
+
+const pauseBtn = document.getElementById('btn-pause');
+pauseBtn.addEventListener('click', () => {
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  pauseBtn.classList.toggle('active', paused);
+  if (!paused) requestAnimationFrame(loop);
+});
+
+// ── Color picker ──────────────────────────────────────────────────────────────
+const colorPicker = document.getElementById('color-picker');
+let activeColorKey = null;
+
+document.querySelectorAll('.swatch[data-color-key]').forEach(swatch => {
+  swatch.addEventListener('click', () => {
+    activeColorKey = swatch.dataset.colorKey;
+    colorPicker.value = colors[activeColorKey];
+    colorPicker.click();
+  });
+});
+
+colorPicker.addEventListener('input', () => {
+  if (!activeColorKey) return;
+  colors[activeColorKey] = colorPicker.value;
+  document.querySelector(`.swatch[data-color-key="${activeColorKey}"]`).style.background = colorPicker.value;
+});
+
+// ── Render loop ───────────────────────────────────────────────────────────────
+let lastTime = null, fpsSamples = [];
+
+function draw() {
+  const { sigma, rho, beta, stepsPerPass, dt, method } = params;
+  const pong = 1 - ping;
+
+  // Sim pass → write into pong FBO
+  gl.bindFramebuffer(gl.FRAMEBUFFER, fbos[pong]);
+  gl.viewport(0, 0, W, H);
+  gl.useProgram(simProg);
+  gl.bindVertexArray(vao);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, textures[ping]);
+  gl.uniform1i(simU.state, 0);
+  gl.uniform1f(simU.sigma, sigma);
+  gl.uniform1f(simU.beta,  beta);
+  gl.uniform1f(simU.rho,   rho);
+  gl.uniform1f(simU.dt,    dt);
+  gl.uniform1i(simU.stepsPerPass, stepsPerPass);
+  gl.uniform1i(simU.method, method);
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+  ping = pong;
+  totalSteps += stepsPerPass;
+  totalTime  += stepsPerPass * dt;
+
+  // Display pass → canvas
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, W, H);
+  gl.useProgram(dispProg);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, textures[ping]);
+  gl.uniform1i(dispU.state, 0);
+  gl.uniform1f(dispU.beta,  beta);
+  gl.uniform1f(dispU.rho,   rho);
+  gl.uniform3fv(dispU.colorP,  hexToVec3(colors.colorP));
+  gl.uniform3fv(dispU.colorM,  hexToVec3(colors.colorM));
+  gl.uniform3fv(dispU.colorBg, hexToVec3(colors.colorBg));
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  gl.bindVertexArray(null);
+
+  document.getElementById('st-time').textContent  = totalTime.toFixed(2);
+  document.getElementById('st-steps').textContent = totalSteps.toLocaleString();
+}
+
+function loop(ts) {
+  if (paused) return;
+  if (lastTime !== null) {
+    fpsSamples.push(1000 / (ts - lastTime));
+    if (fpsSamples.length > 30) fpsSamples.shift();
+    document.getElementById('st-fps').textContent =
+      (fpsSamples.reduce((a,b)=>a+b,0) / fpsSamples.length).toFixed(1);
+  }
+  lastTime = ts;
+  draw();
+  requestAnimationFrame(loop);
+}
+
+// ── Responsive canvas size ────────────────────────────────────────────────────
+function resize() {
+  const PANEL_W = 230 + 24 + 48; // panel + gap + body padding both sides
+  const PAD_H   = 48;             // body padding top + bottom
+  const avW = Math.max(100, window.innerWidth  - PANEL_W);
+  const avH = Math.max(100, window.innerHeight - PAD_H);
+  canvas.style.width  = avW + 'px';
+  canvas.style.height = avH + 'px';
+
+  // Use full device pixel resolution, capped to GPU max texture size.
+  // On software renderers, also cap CSS size so the texture stays manageable.
+  const dpr    = window.devicePixelRatio || 1;
+  const maxTex = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+  const resCap = isSoftwareGPU ? SOFTWARE_RES_CAP : Infinity;
+  const newW   = Math.max(1, Math.min(Math.round(Math.min(avW, resCap) * dpr), maxTex));
+  const newH   = Math.max(1, Math.min(Math.round(Math.min(avH, resCap) * dpr), maxTex));
+  if (newW !== W || newH !== H) {
+    W = newW;
+    H = newH;
+    canvas.width  = W;
+    canvas.height = H;
+    doReset();
+  }
+}
+
+// ── Save as indexed PNG ───────────────────────────────────────────────────────
+
+// Re-render the display pass into a fresh RGBA8 FBO and read the pixels.
+// This avoids the preserveDrawingBuffer issue (WebGL clears the canvas after
+// compositing when preserveDrawingBuffer is false, which is the default).
+function readCurrentFrame() {
+  const { beta, rho } = params;
+  const rtex = gl.createTexture();
+  gl.bindTexture(gl.TEXTURE_2D, rtex);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, W, H, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+  const rfbo = gl.createFramebuffer();
+  gl.bindFramebuffer(gl.FRAMEBUFFER, rfbo);
+  gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, rtex, 0);
+  gl.viewport(0, 0, W, H);
+  gl.useProgram(dispProg);
+  gl.bindVertexArray(vao);
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, textures[ping]);
+  gl.uniform1i(dispU.state, 0);
+  gl.uniform1f(dispU.beta,  beta);
+  gl.uniform1f(dispU.rho,   rho);
+  gl.uniform3fv(dispU.colorP,  hexToVec3(colors.colorP));
+  gl.uniform3fv(dispU.colorM,  hexToVec3(colors.colorM));
+  gl.uniform3fv(dispU.colorBg, hexToVec3(colors.colorBg));
+  gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  const raw = new Uint8Array(W * H * 4);
+  gl.readPixels(0, 0, W, H, gl.RGBA, gl.UNSIGNED_BYTE, raw);
+  gl.bindVertexArray(null);
+  gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+  gl.viewport(0, 0, W, H);
+  gl.deleteFramebuffer(rfbo);
+  gl.deleteTexture(rtex);
+  return raw; // rows in bottom-to-top order (WebGL origin is bottom-left)
+}
+
+// Median-cut palette quantizer.
+// Builds a 6-bit/channel histogram first (at most 2^18 = 262k unique keys),
+// then subdivides boxes by the channel with the largest range.
+function quantize(pixels, maxColors) {
+  const hist = new Map();
+  for (let i = 0; i < pixels.length; i += 4) {
+    const r = pixels[i], g = pixels[i+1], b = pixels[i+2];
+    const key = (r >> 2) << 12 | (g >> 2) << 6 | (b >> 2);
+    const e = hist.get(key);
+    if (e) { e[0] += r; e[1] += g; e[2] += b; e[3]++; }
+    else      hist.set(key, [r, g, b, 1]);
+  }
+  // Convert to averaged [r, g, b, count] entries
+  let entries = [];
+  for (const e of hist.values())
+    entries.push([Math.round(e[0]/e[3]), Math.round(e[1]/e[3]), Math.round(e[2]/e[3]), e[3]]);
+
+  if (entries.length <= maxColors) return entries.map(e => [e[0], e[1], e[2]]);
+
+  // Median cut: repeatedly split the box with the most pixels
+  let boxes = [entries];
+  while (boxes.length < maxColors) {
+    let bi = 0, bestCount = 0;
+    for (let i = 0; i < boxes.length; i++) {
+      const c = boxes[i].reduce((s, e) => s + e[3], 0);
+      if (c > bestCount) { bestCount = c; bi = i; }
+    }
+    const box = boxes[bi];
+    let rMn=255,rMx=0, gMn=255,gMx=0, bMn=255,bMx=0;
+    for (const [r,g,b] of box) {
+      if(r<rMn)rMn=r; if(r>rMx)rMx=r;
+      if(g<gMn)gMn=g; if(g>gMx)gMx=g;
+      if(b<bMn)bMn=b; if(b>bMx)bMx=b;
+    }
+    const dr=rMx-rMn, dg=gMx-gMn, db=bMx-bMn;
+    if (dr===0 && dg===0 && db===0) break;
+    const ch = dr>=dg && dr>=db ? 0 : dg>=db ? 1 : 2;
+    box.sort((a, b) => a[ch] - b[ch]);
+    const mid = Math.floor(box.length / 2);
+    boxes.splice(bi, 1, box.slice(0, mid), box.slice(mid));
+  }
+
+  return boxes.filter(b => b.length).map(box => {
+    const tot = box.reduce((s, e) => s + e[3], 0);
+    return [
+      Math.round(box.reduce((s,e) => s + e[0]*e[3], 0) / tot),
+      Math.round(box.reduce((s,e) => s + e[1]*e[3], 0) / tot),
+      Math.round(box.reduce((s,e) => s + e[2]*e[3], 0) / tot),
+    ];
+  });
+}
+
+// Encode an indexed-color PNG.
+// palette: array of [r,g,b].  indices: Uint8Array of palette indices, row-major top-to-bottom.
+// IDAT uses CompressionStream('deflate') which produces RFC-1950 zlib format — exactly what PNG requires.
+async function encodeIndexedPNG(width, height, palette, indices) {
+  function u32(n) {
+    return new Uint8Array([(n>>>24)&0xff, (n>>>16)&0xff, (n>>>8)&0xff, n&0xff]);
+  }
+  function crc32(buf) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < buf.length; i++) {
+      c ^= buf[i];
+      for (let j = 0; j < 8; j++) c = (c & 1) ? (c >>> 1) ^ 0xEDB88320 : c >>> 1;
+    }
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  function chunk(type, data) {
+    const t = new TextEncoder().encode(type);
+    const forCRC = new Uint8Array(4 + data.length);
+    forCRC.set(t); forCRC.set(data, 4);
+    return [u32(data.length), t, data, u32(crc32(forCRC))];
+  }
+
+  // IHDR: width, height, 8-bit depth, color type 3 = indexed
+  const ihdr = new Uint8Array(13);
+  const dv = new DataView(ihdr.buffer);
+  dv.setUint32(0, width); dv.setUint32(4, height);
+  ihdr[8] = 8; ihdr[9] = 3;
+
+  // PLTE
+  const plte = new Uint8Array(palette.length * 3);
+  for (let i = 0; i < palette.length; i++) {
+    plte[i*3] = palette[i][0]; plte[i*3+1] = palette[i][1]; plte[i*3+2] = palette[i][2];
+  }
+
+  // Raw image data: one filter byte (0 = None) per row, then the palette indices
+  const raw = new Uint8Array(height * (1 + width));
+  for (let y = 0; y < height; y++) {
+    raw[y * (1 + width)] = 0;
+    raw.set(indices.subarray(y * width, (y + 1) * width), y * (1 + width) + 1);
+  }
+
+  // Compress (zlib/deflate = RFC 1950, as required by PNG)
+  const cs = new CompressionStream('deflate');
+  const w = cs.writable.getWriter();
+  w.write(raw); w.close();
+  const idat = new Uint8Array(await new Response(cs.readable).arrayBuffer());
+
+  // Assemble chunks
+  const sig = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10]);
+  const parts = [sig, ...chunk('IHDR', ihdr), ...chunk('PLTE', plte),
+                      ...chunk('IDAT', idat), ...chunk('IEND', new Uint8Array(0))];
+  const out = new Uint8Array(parts.reduce((s, p) => s + p.length, 0));
+  let off = 0;
+  for (const p of parts) { out.set(p, off); off += p.length; }
+  return out;
+}
+
+async function saveAsPNG() {
+  const btn = document.getElementById('btn-save');
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+  try {
+    // 1. Re-render into RGBA8 FBO and read pixels (bottom-to-top)
+    const rawPixels = readCurrentFrame();
+
+    // 2. Flip rows to top-to-bottom (PNG origin is top-left)
+    const pixels = new Uint8Array(W * H * 4);
+    for (let y = 0; y < H; y++)
+      pixels.set(rawPixels.subarray((H-1-y)*W*4, (H-y)*W*4), y*W*4);
+
+    // 3. Quantize to ≤256 palette colors via median cut
+    const palette = quantize(pixels, 256);
+
+    // 4. Map each pixel to nearest palette index (cache avoids repeated O(256) searches)
+    const cache = new Map();
+    const indices = new Uint8Array(W * H);
+    for (let i = 0; i < W * H; i++) {
+      const r = pixels[i*4], g = pixels[i*4+1], b = pixels[i*4+2];
+      const key = r << 16 | g << 8 | b;
+      let idx = cache.get(key);
+      if (idx === undefined) {
+        let best = Infinity, bestIdx = 0;
+        for (let p = 0; p < palette.length; p++) {
+          const dr=r-palette[p][0], dg=g-palette[p][1], db=b-palette[p][2];
+          const d = dr*dr + dg*dg + db*db;
+          if (d < best) { best = d; bestIdx = p; }
+        }
+        cache.set(key, bestIdx);
+        idx = bestIdx;
+      }
+      indices[i] = idx;
+    }
+
+    // 5. Encode and download
+    const png = await encodeIndexedPNG(W, H, palette, indices);
+    const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = `lorenz_basin_${W}x${H}.png`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  } catch(e) {
+    console.error('PNG save failed:', e);
+  } finally {
+    btn.textContent = 'Save PNG';
+    btn.disabled = false;
+  }
+}
+
+document.getElementById('btn-save').addEventListener('click', saveAsPNG);
+
+resize();   // sets W/H and calls doReset() for the first time
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(resize, 150);
+});
+
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>

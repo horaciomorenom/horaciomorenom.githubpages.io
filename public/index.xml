@@ -6,7 +6,16 @@
     <description>Recent content on Horacio Moreno Montañes</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en</language>
-    <lastBuildDate>Sat, 15 Jul 2023 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 19 Feb 2026 00:00:00 +0000</lastBuildDate><atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Lorenz Basin of Attraction</title>
+      <link>http://localhost:1313/projects/lorenz-basin/</link>
+      <pubDate>Thu, 19 Feb 2026 00:00:00 +0000</pubDate>
+      
+      <guid>http://localhost:1313/projects/lorenz-basin/</guid>
+      <description>An interactive GPU simulation of the Lorenz system&amp;#39;s basin of attraction, rendered in full resolution using WebGL2.</description>
+    </item>
+    
     <item>
       <title>Modeling 1D Cold Electrostatic Plasma with a Lagrangian Particle Method</title>
       <link>http://localhost:1313/projects/plasma/</link>
