@@ -191,6 +191,7 @@
       <span class="bounds-sep">→</span>
       <input type="number" id="b-zmax" value="100"  step="1" autocomplete="off">
     </div>
+    <button class="action" id="btn-reset-view" style="width:100%;margin-top:8px">Reset View</button>
   </div>
 
   <!-- Integration method -->
@@ -631,6 +632,38 @@ pauseBtn.addEventListener('click', () => {
   pauseBtn.textContent = paused ? 'Resume' : 'Pause';
   pauseBtn.classList.toggle('active', paused);
   if (!paused) requestAnimationFrame(loop);
+});
+
+// ── Double-click zoom ─────────────────────────────────────────────────────────
+canvas.addEventListener('dblclick', e => {
+  const rect = canvas.getBoundingClientRect();
+  const fx = (e.clientX - rect.left)  / rect.width;
+  const fz = 1 - (e.clientY - rect.top) / rect.height;  // WebGL y=0 is bottom
+  const cx = params.xMin + fx * (params.xMax - params.xMin);
+  const cz = params.zMin + fz * (params.zMax - params.zMin);
+  const hw = (params.xMax - params.xMin) / 4;  // half of half-width
+  const hh = (params.zMax - params.zMin) / 4;  // half of half-height
+  const r = v => Math.round(v * 10) / 10;
+  params.xMin = r(cx - hw);  params.xMax = r(cx + hw);
+  params.zMin = r(cz - hh);  params.zMax = r(cz + hh);
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+  clearTimeout(resetTimer);
+  doReset();
+});
+
+// ── Reset view button ─────────────────────────────────────────────────────────
+const DEFAULT_BOUNDS = { xMin: -50, xMax: 50, zMin: -10, zMax: 100 };
+document.getElementById('btn-reset-view').addEventListener('click', () => {
+  Object.assign(params, DEFAULT_BOUNDS);
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+  clearTimeout(resetTimer);
+  doReset();
 });
 
 // ── Color picker ──────────────────────────────────────────────────────────────
