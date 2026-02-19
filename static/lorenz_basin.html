@@ -25,6 +25,7 @@
     flex-shrink: 0;
     image-rendering: pixelated;
     border: 1px solid #222;
+    touch-action: none; /* gestures handled by JS */
     /* size set dynamically by JS */
   }
   .panel {
@@ -753,6 +754,106 @@ document.addEventListener('keydown', e => {
   clearTimeout(resetTimer);
   doReset();
 });
+
+// ── Touch pan & pinch-zoom ───────────────────────────────────────────────────
+(function() {
+  let touchState = null; // { type: 'pan'|'pinch', ... }
+
+  // Save bounds at gesture start so deltas are relative to original view
+  let startBounds = null;
+
+  function saveBounds() {
+    return { xMin: params.xMin, xMax: params.xMax, zMin: params.zMin, zMax: params.zMax };
+  }
+
+  function touchDist(t0, t1) {
+    const dx = t1.clientX - t0.clientX, dy = t1.clientY - t0.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  function touchMid(t0, t1) {
+    return { x: (t0.clientX + t1.clientX) / 2, y: (t0.clientY + t1.clientY) / 2 };
+  }
+
+  function updateBoundsUI() {
+    const r = v => Math.round(v * 10) / 10;
+    params.xMin = r(params.xMin); params.xMax = r(params.xMax);
+    params.zMin = r(params.zMin); params.zMax = r(params.zMax);
+    document.getElementById('b-xmin').value = params.xMin;
+    document.getElementById('b-xmax').value = params.xMax;
+    document.getElementById('b-zmin').value = params.zMin;
+    document.getElementById('b-zmax').value = params.zMax;
+  }
+
+  canvas.addEventListener('touchstart', e => {
+    if (e.touches.length === 1) {
+      const t = e.touches[0];
+      touchState = { type: 'pan', startX: t.clientX, startY: t.clientY };
+      startBounds = saveBounds();
+    } else if (e.touches.length === 2) {
+      const d = touchDist(e.touches[0], e.touches[1]);
+      const mid = touchMid(e.touches[0], e.touches[1]);
+      touchState = { type: 'pinch', startDist: d, midX: mid.x, midY: mid.y };
+      startBounds = saveBounds();
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener('touchmove', e => {
+    if (!touchState || !startBounds) return;
+    const rect = canvas.getBoundingClientRect();
+
+    if (touchState.type === 'pan' && e.touches.length === 1) {
+      e.preventDefault();
+      const t = e.touches[0];
+      const dx = (t.clientX - touchState.startX) / rect.width;
+      const dy = (t.clientY - touchState.startY) / rect.height;
+      const rangeX = startBounds.xMax - startBounds.xMin;
+      const rangeZ = startBounds.zMax - startBounds.zMin;
+      // Drag right → view moves left (subtract), drag down → view moves up (add, since y is flipped)
+      params.xMin = startBounds.xMin - dx * rangeX;
+      params.xMax = startBounds.xMax - dx * rangeX;
+      params.zMin = startBounds.zMin + dy * rangeZ;
+      params.zMax = startBounds.zMax + dy * rangeZ;
+      // Apply CSS transform for visual feedback (reset on touchend)
+      canvas.style.transform = `translate(${t.clientX - touchState.startX}px, ${t.clientY - touchState.startY}px)`;
+    } else if (touchState.type === 'pinch' && e.touches.length === 2) {
+      e.preventDefault();
+      const d = touchDist(e.touches[0], e.touches[1]);
+      const scale = touchState.startDist / d; // >1 = zoom out, <1 = zoom in
+      // Zoom centered on initial pinch midpoint
+      const fx = (touchState.midX - rect.left) / rect.width;
+      const fz = 1 - (touchState.midY - rect.top) / rect.height;
+      const cx = startBounds.xMin + fx * (startBounds.xMax - startBounds.xMin);
+      const cz = startBounds.zMin + fz * (startBounds.zMax - startBounds.zMin);
+      const hw = (startBounds.xMax - startBounds.xMin) * scale / 2;
+      const hh = (startBounds.zMax - startBounds.zMin) * scale / 2;
+      params.xMin = cx - hw; params.xMax = cx + hw;
+      params.zMin = cz - hh; params.zMax = cz + hh;
+      // Visual feedback: scale canvas around pinch center
+      const cssScale = d / touchState.startDist;
+      const ox = touchState.midX - rect.left, oy = touchState.midY - rect.top;
+      canvas.style.transformOrigin = `${ox}px ${oy}px`;
+      canvas.style.transform = `scale(${cssScale})`;
+    }
+  }, { passive: false });
+
+  function endGesture() {
+    if (!touchState || !startBounds) { touchState = null; return; }
+    canvas.style.transform = '';
+    canvas.style.transformOrigin = '';
+    updateBoundsUI();
+    clearTimeout(resetTimer);
+    doReset();
+    touchState = null;
+    startBounds = null;
+  }
+
+  canvas.addEventListener('touchend', e => {
+    if (e.touches.length === 0) endGesture();
+  });
+  canvas.addEventListener('touchcancel', endGesture);
+})();
 
 // ── Reset view button ─────────────────────────────────────────────────────────
 const DEFAULT_BOUNDS = { xMin: -50, xMax: 50, zMin: -10, zMax: 100 };
