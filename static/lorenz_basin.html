@@ -183,6 +183,20 @@
       aspect-ratio: 1;
       flex-shrink: 0;
     }
+    body.explore canvas {
+      aspect-ratio: auto;
+      width: 100vw !important;
+      height: 100vh !important;
+    }
+    body.explore #btn-show-panel {
+      right: auto; left: 50%;
+      top: auto; bottom: 0;
+      transform: translateX(-50%);
+      width: 56px; height: 28px;
+      border: 1px solid #333;
+      border-bottom: none;
+      border-radius: 6px 6px 0 0;
+    }
     .panel {
       width: 100%;
       max-height: none;
@@ -947,13 +961,41 @@ function loop(ts) {
 // ── Explore mode ─────────────────────────────────────────────────────────────
 let exploreMode = false;
 
+const showPanelBtn = document.getElementById('btn-show-panel');
+
+let boundsBeforeExplore = null;
+
 function setExploreMode(on) {
   exploreMode = on;
   document.body.classList.toggle('explore', on);
+  // Point arrow toward the panel: up on mobile (panel below), right on desktop (panel right)
+  showPanelBtn.innerHTML = (on && window.innerWidth <= MOBILE_BP) ? '&#9650;' : '&#9654;';
   if (on) {
+    // Save current bounds so we can restore on exit
+    boundsBeforeExplore = { xMin: params.xMin, xMax: params.xMax, zMin: params.zMin, zMax: params.zMax };
+    // Extend z-range to match screen aspect ratio
+    const aspect = window.innerHeight / window.innerWidth;
+    const rangeX = params.xMax - params.xMin;
+    const targetZ = rangeX * aspect;
+    const cz = (params.zMin + params.zMax) / 2;
+    params.zMin = Math.round((cz - targetZ / 2) * 10) / 10;
+    params.zMax = Math.round((cz + targetZ / 2) * 10) / 10;
+    document.getElementById('b-zmin').value = params.zMin;
+    document.getElementById('b-zmax').value = params.zMax;
     document.documentElement.requestFullscreen().catch(() => {});
-  } else if (document.fullscreenElement) {
-    document.exitFullscreen().catch(() => {});
+  } else {
+    // Restore bounds from before explore
+    if (boundsBeforeExplore) {
+      Object.assign(params, boundsBeforeExplore);
+      document.getElementById('b-xmin').value = params.xMin;
+      document.getElementById('b-xmax').value = params.xMax;
+      document.getElementById('b-zmin').value = params.zMin;
+      document.getElementById('b-zmax').value = params.zMax;
+      boundsBeforeExplore = null;
+    }
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
   }
   resize();
 }
