@@ -839,22 +839,37 @@ document.addEventListener('keydown', e => {
     } else if (touchState.type === 'pinch' && e.touches.length === 2) {
       e.preventDefault();
       const d = touchDist(e.touches[0], e.touches[1]);
+      const curMid = touchMid(e.touches[0], e.touches[1]);
       const scale = touchState.startDist / d; // >1 = zoom out, <1 = zoom in
-      // Zoom keeping the pinch point fixed on screen
-      const fx = (touchState.midX - rect.left) / rect.width;
-      const fz = 1 - (touchState.midY - rect.top) / rect.height;
-      const cx = startBounds.xMin + fx * (startBounds.xMax - startBounds.xMin);
-      const cz = startBounds.zMin + fz * (startBounds.zMax - startBounds.zMin);
-      // Scale distances from pinch point to each edge
-      params.xMin = cx + (startBounds.xMin - cx) * scale;
-      params.xMax = cx + (startBounds.xMax - cx) * scale;
-      params.zMin = cz + (startBounds.zMin - cz) * scale;
-      params.zMax = cz + (startBounds.zMax - cz) * scale;
-      // Visual feedback: scale canvas around pinch center
+
+      // The point under the initial midpoint in parameter space
+      const startFx = (touchState.midX - rect.left) / rect.width;
+      const startFz = 1 - (touchState.midY - rect.top) / rect.height;
+      const rangeX = startBounds.xMax - startBounds.xMin;
+      const rangeZ = startBounds.zMax - startBounds.zMin;
+      const anchorX = startBounds.xMin + startFx * rangeX;
+      const anchorZ = startBounds.zMin + startFz * rangeZ;
+
+      // New ranges after scaling
+      const newRangeX = rangeX * scale;
+      const newRangeZ = rangeZ * scale;
+
+      // Where the current midpoint is on screen (fractional)
+      const curFx = (curMid.x - rect.left) / rect.width;
+      const curFz = 1 - (curMid.y - rect.top) / rect.height;
+
+      // Place anchor point at current midpoint position
+      params.xMin = anchorX - curFx * newRangeX;
+      params.xMax = params.xMin + newRangeX;
+      params.zMin = anchorZ - curFz * newRangeZ;
+      params.zMax = params.zMin + newRangeZ;
+
+      // Visual feedback: combined translate + scale
       const cssScale = d / touchState.startDist;
       const ox = touchState.midX - rect.left, oy = touchState.midY - rect.top;
+      const tx = curMid.x - touchState.midX, ty = curMid.y - touchState.midY;
       canvas.style.transformOrigin = `${ox}px ${oy}px`;
-      canvas.style.transform = `scale(${cssScale})`;
+      canvas.style.transform = `translate(${tx}px, ${ty}px) scale(${cssScale})`;
     }
   }, { passive: false });
 
