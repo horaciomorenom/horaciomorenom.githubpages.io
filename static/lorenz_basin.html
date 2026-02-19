@@ -137,11 +137,39 @@
     border-radius: 3px; padding: 5px 7px; line-height: 1.5;
     display: none;
   }
+
+  /* Explore mode */
+  .panel { transition: opacity 0.2s, transform 0.2s; }
+  body.explore .panel { display: none; }
+  body.explore { padding: 0; gap: 0; }
+  body.explore canvas { border: none; }
+
+  #btn-show-panel {
+    position: fixed;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    width: 28px; height: 56px;
+    background: rgba(17, 17, 17, 0.7);
+    border: 1px solid #333;
+    border-right: none;
+    border-radius: 6px 0 0 6px;
+    color: #888;
+    font-size: 16px;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    z-index: 10;
+  }
+  #btn-show-panel:hover { background: rgba(26, 26, 46, 0.9); color: #697aff; }
+  body.explore #btn-show-panel { display: flex; }
 </style>
 </head>
 <body>
 
 <canvas id="c" width="800" height="800"></canvas>
+<button id="btn-show-panel" title="Show sidebar">&#9654;</button>
 
 <div class="panel">
   <div>
@@ -149,6 +177,17 @@
     <p class="subtitle">Basin of attraction for C+ / C− fixed points on the surface y = −x</p>
   </div>
   <div class="gpu-warn" id="gpu-warn"></div>
+
+  <!-- Controls -->
+  <div>
+    <div class="section-title">Controls</div>
+    <div class="legend">
+      <div class="legend-item"><span style="color:#697aff">Arrow keys</span> Pan view</div>
+      <div class="legend-item"><span style="color:#697aff">Double-click</span> Zoom in</div>
+      <div class="legend-item"><span style="color:#697aff">Shift + double-click</span> Zoom out</div>
+      <div class="legend-item"><span style="color:#697aff">Escape</span> Exit explore mode</div>
+    </div>
+  </div>
 
   <!-- Lorenz parameters -->
   <div>
@@ -208,6 +247,7 @@
   <div class="buttons">
     <button class="action" id="btn-reset">Reset</button>
     <button class="action" id="btn-pause">Pause</button>
+    <button class="action" id="btn-explore">Explore</button>
   </div>
 
   <!-- Status -->
@@ -641,11 +681,36 @@ canvas.addEventListener('dblclick', e => {
   const fz = 1 - (e.clientY - rect.top) / rect.height;  // WebGL y=0 is bottom
   const cx = params.xMin + fx * (params.xMax - params.xMin);
   const cz = params.zMin + fz * (params.zMax - params.zMin);
-  const hw = (params.xMax - params.xMin) / 4;  // half of half-width
-  const hh = (params.zMax - params.zMin) / 4;  // half of half-height
+  const zoomOut = e.shiftKey;
+  const scale = zoomOut ? 2 : 0.5;  // zoom out: 2x wider; zoom in: 2x narrower
+  const hw = (params.xMax - params.xMin) * scale / 2;
+  const hh = (params.zMax - params.zMin) * scale / 2;
   const r = v => Math.round(v * 10) / 10;
   params.xMin = r(cx - hw);  params.xMax = r(cx + hw);
   params.zMin = r(cz - hh);  params.zMax = r(cz + hh);
+  document.getElementById('b-xmin').value = params.xMin;
+  document.getElementById('b-xmax').value = params.xMax;
+  document.getElementById('b-zmin').value = params.zMin;
+  document.getElementById('b-zmax').value = params.zMax;
+  clearTimeout(resetTimer);
+  doReset();
+});
+
+// ── Arrow key panning ────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+  const dx = (params.xMax - params.xMin) * 0.1;
+  const dz = (params.zMax - params.zMin) * 0.1;
+  let moved = false;
+  if (e.key === 'ArrowLeft')  { params.xMin -= dx; params.xMax -= dx; moved = true; }
+  if (e.key === 'ArrowRight') { params.xMin += dx; params.xMax += dx; moved = true; }
+  if (e.key === 'ArrowDown')  { params.zMin -= dz; params.zMax -= dz; moved = true; }
+  if (e.key === 'ArrowUp')    { params.zMin += dz; params.zMax += dz; moved = true; }
+  if (!moved) return;
+  e.preventDefault();
+  const r = v => Math.round(v * 10) / 10;
+  params.xMin = r(params.xMin); params.xMax = r(params.xMax);
+  params.zMin = r(params.zMin); params.zMax = r(params.zMax);
   document.getElementById('b-xmin').value = params.xMin;
   document.getElementById('b-xmax').value = params.xMax;
   document.getElementById('b-zmin').value = params.zMin;
@@ -743,10 +808,35 @@ function loop(ts) {
   requestAnimationFrame(loop);
 }
 
+// ── Explore mode ─────────────────────────────────────────────────────────────
+let exploreMode = false;
+
+function setExploreMode(on) {
+  exploreMode = on;
+  document.body.classList.toggle('explore', on);
+  if (on) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else if (document.fullscreenElement) {
+    document.exitFullscreen().catch(() => {});
+  }
+  resize();
+}
+
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement && exploreMode) {
+    exploreMode = false;
+    document.body.classList.remove('explore');
+    resize();
+  }
+});
+
+document.getElementById('btn-explore').addEventListener('click', () => setExploreMode(true));
+document.getElementById('btn-show-panel').addEventListener('click', () => setExploreMode(false));
+
 // ── Responsive canvas size ────────────────────────────────────────────────────
 function resize() {
-  const PANEL_W = 280 + 24 + 48; // panel + gap + body padding both sides
-  const PAD_H   = 48;             // body padding top + bottom
+  const PANEL_W = exploreMode ? 0 : 280 + 24 + 48; // panel + gap + body padding both sides
+  const PAD_H   = exploreMode ? 0 : 48;              // body padding top + bottom
   const avW = Math.max(100, window.innerWidth  - PANEL_W);
   const avH = Math.max(100, window.innerHeight - PAD_H);
   canvas.style.width  = avW + 'px';
