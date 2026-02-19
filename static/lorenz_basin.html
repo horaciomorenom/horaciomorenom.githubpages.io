@@ -805,11 +805,15 @@ document.addEventListener('keydown', e => {
       const t = e.touches[0];
       touchState = { type: 'pan', startX: t.clientX, startY: t.clientY };
       startBounds = saveBounds();
+      canvas.style.transform = '';
     } else if (e.touches.length === 2) {
+      // Reset any in-progress pan transform before starting pinch
+      canvas.style.transform = '';
+      canvas.style.transformOrigin = '';
       const d = touchDist(e.touches[0], e.touches[1]);
       const mid = touchMid(e.touches[0], e.touches[1]);
       touchState = { type: 'pinch', startDist: d, midX: mid.x, midY: mid.y };
-      startBounds = saveBounds();
+      startBounds = saveBounds(); // re-save current (possibly panned) bounds
       e.preventDefault();
     }
   }, { passive: false });
@@ -836,15 +840,16 @@ document.addEventListener('keydown', e => {
       e.preventDefault();
       const d = touchDist(e.touches[0], e.touches[1]);
       const scale = touchState.startDist / d; // >1 = zoom out, <1 = zoom in
-      // Zoom centered on initial pinch midpoint
+      // Zoom keeping the pinch point fixed on screen
       const fx = (touchState.midX - rect.left) / rect.width;
       const fz = 1 - (touchState.midY - rect.top) / rect.height;
       const cx = startBounds.xMin + fx * (startBounds.xMax - startBounds.xMin);
       const cz = startBounds.zMin + fz * (startBounds.zMax - startBounds.zMin);
-      const hw = (startBounds.xMax - startBounds.xMin) * scale / 2;
-      const hh = (startBounds.zMax - startBounds.zMin) * scale / 2;
-      params.xMin = cx - hw; params.xMax = cx + hw;
-      params.zMin = cz - hh; params.zMax = cz + hh;
+      // Scale distances from pinch point to each edge
+      params.xMin = cx + (startBounds.xMin - cx) * scale;
+      params.xMax = cx + (startBounds.xMax - cx) * scale;
+      params.zMin = cz + (startBounds.zMin - cz) * scale;
+      params.zMax = cz + (startBounds.zMax - cz) * scale;
       // Visual feedback: scale canvas around pinch center
       const cssScale = d / touchState.startDist;
       const ox = touchState.midX - rect.left, oy = touchState.midY - rect.top;
